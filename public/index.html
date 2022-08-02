@@ -1,0 +1,159 @@
+<!DOCTYPE HTML>
+<html lang="en-us">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="chrome=1">
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="referrer" content="no-referrer">
+	
+	<title> Thumbnail Preserving Encryption </title>
+	
+	<script src="enc.js"></script>
+	
+	<link rel="stylesheet" href="/main.min.b3de6ec27e6e45a867d3b559220887babb3f6e50f74a0657c8eddac1eb50e3ed.css" crossorigin="anonymous" media="screen">
+
+	<link rel="stylesheet" href="https://osucybersec.github.io/tpe-demo/styles/owlCarousel.min.b1f26e29c43c61fe8b5a6f225b4ee7c5f969a7b33cfe512706271e07246d93d1.css" integrity="sha256-sfJuKcQ8Yf6LWm8iW07nxflpp7M8/lEnBiceByRtk9E=" crossorigin="anonymous" media="screen">
+	
+</head>
+
+<body>
+	<script src="index.js"></script>
+	
+	<section id="top" class="hero is-small"> 
+        <div class="hero-head"></div>
+		<div class="hero-body">
+			<div class="container has-text-centered"> 
+				<h1 class="bold-title fade-in one"> Thumbnail Preserving Encryption </h1>
+				<div class="subtitle is-3 fade-in two">
+					
+				</div>
+				<div class="fade-in three">
+					<div class="social-icons">
+
+					</div>
+
+				</div>
+				
+			</div>
+		</div> 
+		
+		<div class="hero-foot fade-in three">
+			<div class="container">
+				<hr>
+				<nav class="navbar" role="navigation" aria-label="main navigation">
+					
+					<a role="button" class="navbar-burger" data-target="navMenu" aria-label="menu" aria-expanded="false" >
+						<span aria-hidden="true"></span>
+						<span aria-hidden="true"></span>
+						<span aria-hidden="true"></span>
+					</a>
+					<div class="navbar-menu has-content-centered" id="navMenu">
+						<a class="navbar-item" href="#demo">Demo</a>
+					</div>
+				</nav>
+				<hr>
+			</div>
+		</div>
+    </section> 
+
+	<div class="section" id="demo">
+		<div class="container">
+			<h2 class="title is-2 has-text-centered">Demo</h2>
+			
+			<div class="markdown has-text-centered">
+				<!--script src="tpe.js"></script-->
+				<link href="tpe.css" type="text/css" rel="stylesheet" />
+				<div id="ddemo" class="box-col">
+					<section>
+						<!-- Select image -->
+						<div>
+							<input type="file" name="Browse" id="browse" accept="image/*" class="action-button">
+						</div>
+						<span>
+							<div>Number of iterations:<input type="number" name="iterations" id="iterations" min="1" required> </div>
+							<div>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Block Size:<input type="number" name="blocksize" id="blocksize" min="1" required> </div>
+							<div id="abc">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Key:&#160;&#160;&#160;&#160;<input type="text" name="key" id="key" required> </div>
+							<div><button id="set" class="button">Set</button></div>
+						</span>
+						<!-- Original image -->
+						<div class="box-row">
+							<!-- image -->
+							<div class="canvas-container">
+								<div> Original Image </div>
+								<canvas class="canvas-image" id="canvas-og"></canvas>
+							</div>
+							<!-- thumbnail -->
+							<div class="canvas-container">
+								<div> Original Image Thumbnail </div>
+								<canvas class="canvas-image-thumbnail" id="canvas-ogt"></canvas>
+							</div>
+						</div>
+						<!-- Encrypt image -->
+						<div><button id="encrypt" class="button">Encrypt</button></div>
+						<div class="box-row">
+							<!-- image -->
+							<div class="canvas-container">
+								<div> Encrypted Image </div>
+								<canvas class="canvas-image" id="canvas-en"></canvas>
+							</div>
+							<!-- thumbnail -->
+							<div class="canvas-container">
+								<div> Encrypted Image Thumbnail </div>
+								<canvas class="canvas-image-thumbnail" id="canvas-ent"></canvas>
+							</div>
+						</div>
+						<!-- Decrypted image -->
+						<div><button id="decrypt" class="button">Decrypt</button></div>
+						
+						<div class="box-row">
+							<!-- image -->
+							<div class="canvas-container">
+								<div> Decrypted Image</div>
+								<canvas class="canvas-image" id="canvas-de"></canvas>
+							</div>
+							<!-- thumbnail -->
+							<div class="canvas-container">
+								<div> Decrypted Image Thumbnail</div>
+								<canvas class="canvas-image-thumbnail" id="canvas-det"></canvas>
+							</div>
+						</div>
+					</section>
+				</div>
+            </div>
+        </div>
+            
+        <div class="container has-text-centered top-pad">
+			<a href="#top">
+				<i class="fa fa-arrow-up"></i>
+			</a>
+		</div>
+
+    </div>
+	
+	<div class="container">
+		<hr>
+	</div>
+	
+	<div class="section" id="footer">
+		<div class="container has-text-centered">
+			<span class="footer-text">
+				<a href="https://github.com/victoriadrake/hugo-theme-introduction/">
+					<strong>Introduction</strong>
+				</a> theme for 
+				<a href="http://gohugo.io/">Hugo</a>. Made with 
+				<a href="https://victoria.dev">
+					<i class="fa fa-heart"></i> and 
+					<i class="fa fa-coffee"></i>
+				</a> by open source contributors.
+			</span>
+		
+		</div>
+	</div>
+
+	<script src="https://osucybersec.github.io/tpe-demo/js/bundle.2ee571453a8980175e10bda96bda797cc9c4e2e745e488df68d50cef5deb57ff.js" integrity="sha256-LuVxRTqJgBdeEL2pa9p5fMnE4udF5IjfaNUM713rV/8="></script>
+
+	<script src="https://osucybersec.github.io/tpe-demo/js/bundleOwlCarousel.afccb665ffddf92101a8bc04b924a4a5b9a36c0ad0ad61024da751cdd8fd1ed9.js" integrity="sha256-r8y2Zf/d&#43;SEBqLwEuSSkpbmjbArQrWECTadRzdj9Htk="></script>
+</body>
+
+</html>

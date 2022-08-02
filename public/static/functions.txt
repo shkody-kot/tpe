@@ -1,0 +1,3 @@
+create() = __Z6createNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEEii
+encrypt() = __Z7encryptRNSt3__26vectorIiNS_9allocatorIiEEEES4_S4_iiR3tpe
+decrypt() = __Z7decryptRNSt3__26vectorIiNS_9allocatorIiEEEES4_S4_iiR3tpe
