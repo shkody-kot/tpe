@@ -2,7 +2,7 @@
 
 tpe::tpe(char * rkey, int riterations, int rblocksize)
 {
-	std::cout << rkey << std::endl;
+	std::cout << rkey << std::endl;				//important for whatever reason?????
 	strcpy(base->key, rkey);
 	base->iterations = riterations;
 	base->blocksize = rblocksize;
@@ -32,7 +32,9 @@ void tpe::encrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 	aes_rnd * p_aes = new aes_rnd(base->key, total_for_perm);
 	auto endof_aes = std::chrono::high_resolution_clock::now();
 	
-	for (int ccc = 0; ccc < base->iterations; ccc++)
+	std::cout << "initialized" << std::endl;
+	
+	for (auto ccc = 0; ccc < base->iterations; ccc++)
 	{
 		//substitution
 		for (int i = 0; i < n; i++)
@@ -76,6 +78,9 @@ void tpe::encrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 				}
 			}
 		}
+		
+		std::cout << "substituted" << std::endl;
+		
 		//permutation
 		int r, g, b;
 		std::vector<int> r_list, b_list, g_list;
@@ -86,6 +91,11 @@ void tpe::encrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 				r_list.clear();
 				g_list.clear();
 				b_list.clear();
+				
+				r_list.resize(base->blocksize * base->blocksize);
+				g_list.resize(base->blocksize * base->blocksize);
+				b_list.resize(base->blocksize * base->blocksize);
+				
 				for (int k = 0; k < base->blocksize * base->blocksize; k++)
 				{
 					p = k / base->blocksize;
@@ -93,9 +103,9 @@ void tpe::encrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 					r = red[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
 					g = green[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
 					b = blue[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
-					r_list.push_back(r);
-					g_list.push_back(g);
-					b_list.push_back(b);
+					r_list[k] = r;
+					g_list[k] = g;
+					b_list[k] = b;
 				}
 				
 				permutation = p_aes->get_new_permutation(base->blocksize);
@@ -151,6 +161,11 @@ void tpe::decrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 				r_list.clear();
 				g_list.clear();
 				b_list.clear();
+				
+				r_list.resize(base->blocksize * base->blocksize);
+				g_list.resize(base->blocksize * base->blocksize);
+				b_list.resize(base->blocksize * base->blocksize);
+				
 				for (int k= 0; k < base->blocksize * base->blocksize; k++)
 				{
 					p = k / base->blocksize;
@@ -158,9 +173,9 @@ void tpe::decrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 					r = red[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
 					g = green[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
 					b = blue[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
-					r_list.push_back(r);
-					g_list.push_back(g);
-					b_list.push_back(b);
+					r_list[k] = r;
+					g_list[k] = g;
+					b_list[k] = b;
 				}
 				permutation = p_aes->get_new_permutation(base->blocksize);
 				

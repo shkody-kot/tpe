@@ -4,12 +4,14 @@ aes_rnd::aes_rnd(char * rkey, int total_need)
 {
 	base->counter = 0;
 	base->data.clear();
+	base->data.resize(total_need);
 	if (sizeof(rkey) == 0) {std::cout << "key not set!" << std::endl; }
 	else
 	{
 		//temporary
 		std::cout << "key set" << std::endl;
 		base->key = import(rkey);
+		std::cout << "key 'imported'" << std::endl;
 		encrypt(total_need);
 	}
 }
@@ -103,9 +105,9 @@ std::vector<uint8_t> aes_rnd::import(char * right)
 
 void aes_rnd::encrypt(int need)
 {
-	std::vector<int> * iv = new std::vector<int>(16);
+	/*std::vector<int> * iv = new std::vector<int>(16);
 	std::vector<int> * plain = new std::vector<int>(need);
-	std::vector<int> * buffer = new std::vector<int>(need);
+	std::vector<int> * buffer = new std::vector<int>(need);*/
 	
 	//this is where the encryption happens????
 	//encrypt plain into buffer using key and iv
@@ -113,9 +115,10 @@ void aes_rnd::encrypt(int need)
 	
 	for (auto index = 0; index < need; index++)
 	{
-		base->data.push_back(rand() % 256);
+		base->data[index] = rand() % 256;
 	}
-	delete iv;
+	std::cout << "for testing purposes, random numbers generated" << std::endl;
+	/*delete iv;
 	delete buffer;
-	delete plain;
+	delete plain;*/
 }

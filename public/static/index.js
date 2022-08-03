@@ -79,6 +79,7 @@ const importObject = {
 
 var set = function(){
 	console.log("+ set");
+	Module._free(tpe);
 	tpe_iteration = document.getElementById("iterations").value;
 	tpe_blocksize = document.getElementById("blocksize").value;
 	tpe_key = document.getElementById("key").value;
@@ -100,6 +101,7 @@ var set = function(){
 			tpe = Module.__Z6createPcii(key, tpe_iteration, tpe_blocksize);
 		} finally
 		{
+			console.log(tpe);
 			Module._free(key);
 		}
 		document.getElementById("encrypt").disabled = false;
@@ -156,6 +158,8 @@ var encrypt = function ()
 	var green = [];
 	var blue = [];
 	
+	console.log(tpe);
+	
 	for (var i = 0; i < image_data.length; i += 4)
 	{
 		red[i] = image_data.data[i];
@@ -163,7 +167,20 @@ var encrypt = function ()
 		blue[i] = image_data.data[i + 2];
 	}
 	
-	Module.__Z7encryptRNSt3__26vectorIiNS_9allocatorIiEEEES4_S4_iiR3tpe(red, green, blue, width, height, tpe);
+	let r, g, b;
+	try
+	{
+		r = allocate(red, 'i32', ALLOC_NORMAL);
+		g = allocate(green, 'i32', ALLOC_NORMAL);
+		b = allocate(blue, 'i32', ALLOC_NORMAL);
+		Module.__Z7encryptPiS_S_iiP3tpe(r, g, b, width, height, tpe);
+	}
+	finally
+	{
+		Module._free(r);
+		Module._free(g);
+		Module._free(b);
+	}
 	
 	for (var i = 0; i < image_data.length; i += 4)
 	{
@@ -281,8 +298,21 @@ var decrypt = function ()
 		green[i] = image_data.data[i + 1];
 		blue[i] = image_data.data[i + 2];
 	}
-	
-	Module.__Z7decryptRNSt3__26vectorIiNS_9allocatorIiEEEES4_S4_iiR3tpe(red, green, blue, width, height, tpe);
+	let r, g, b;
+	try
+	{
+		r = allocate(red, 'i32', ALLOC_NORMAL);
+		g = allocate(green, 'i32', ALLOC_NORMAL);
+		b = allocate(blue, 'i32', ALLOC_NORMAL);
+		Module.__Z7decryptPiS_S_iiP3tpe(r, g, b, width, height, tpe);
+	}
+	finally
+	{
+		Module._free(r);
+		Module._free(g);
+		Module._free(b);
+	}
+	//Module.__Z7decryptPiS_S_iiP3tpe(red, green, blue, width, height, tpe);
 	
 	for (var i = 0; i < image_data.length; i += 4)
 	{
