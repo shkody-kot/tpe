@@ -158,9 +158,7 @@ var encrypt = function ()
 	var green = [];
 	var blue = [];
 	
-	console.log(tpe);
-	
-	for (var i = 0; i < image_data.length; i += 4)
+	for (var i = 0; i < image_data.data.length; i += 4)
 	{
 		red[i] = image_data.data[i];
 		green[i] = image_data.data[i + 1];
@@ -170,9 +168,9 @@ var encrypt = function ()
 	let r, g, b;
 	try
 	{
-		r = allocate(red, 'i32', ALLOC_NORMAL);
-		g = allocate(green, 'i32', ALLOC_NORMAL);
-		b = allocate(blue, 'i32', ALLOC_NORMAL);
+		r = allocate(red, 'i8', ALLOC_NORMAL);
+		g = allocate(green, 'i8', ALLOC_NORMAL);
+		b = allocate(blue, 'i8', ALLOC_NORMAL);
 		Module.__Z7encryptPiS_S_iiP3tpe(r, g, b, width, height, tpe);
 	}
 	finally
@@ -292,7 +290,7 @@ var decrypt = function ()
 	var green = [];
 	var blue = [];
 	
-	for (var i = 0; i < image_data.length; i += 4)
+	for (var i = 0; i < image_data.data.length; i += 4)
 	{
 		red[i] = image_data.data[i];
 		green[i] = image_data.data[i + 1];
@@ -301,9 +299,9 @@ var decrypt = function ()
 	let r, g, b;
 	try
 	{
-		r = allocate(red, 'i32', ALLOC_NORMAL);
-		g = allocate(green, 'i32', ALLOC_NORMAL);
-		b = allocate(blue, 'i32', ALLOC_NORMAL);
+		r = allocate(red, 'i8', ALLOC_NORMAL);
+		g = allocate(green, 'i8', ALLOC_NORMAL);
+		b = allocate(blue, 'i8', ALLOC_NORMAL);
 		Module.__Z7decryptPiS_S_iiP3tpe(r, g, b, width, height, tpe);
 	}
 	finally
@@ -311,6 +309,7 @@ var decrypt = function ()
 		Module._free(r);
 		Module._free(g);
 		Module._free(b);
+		Module._free(tpe);
 	}
 	//Module.__Z7decryptPiS_S_iiP3tpe(red, green, blue, width, height, tpe);
 	

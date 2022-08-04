@@ -19,7 +19,7 @@ int main()
 	int color3[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 	char test[] = "testkey";
 	
-	tpe * image = create(test, 10, 20);
+	tpe * image = create(test, 10, 1);
 	encrypt(color1, color2, color3, 10, 1, image);
 	decrypt(color1, color2, color3, 10, 1, image);
 	delete image;
@@ -29,7 +29,6 @@ int main()
 
 tpe * create(char * key, int iterations, int block)
 {
-	//std::cout << key << std::endl;
 	tpe * image = new tpe(key, iterations, block);
 	std::cout << "created a tpe object" << std::endl;
 	return image;
@@ -37,7 +36,8 @@ tpe * create(char * key, int iterations, int block)
 
 void encrypt(int * r, int * g, int * b, int width, int height, tpe * right)
 {
-	int size = sizeof(*r) / sizeof(r[0]);
+	int size = width * height;
+	
 	std::vector<int> red(r, r + size);
 	std::vector<int> green(g, g + size);
 	std::vector<int> blue(b, b + size);
@@ -46,19 +46,37 @@ void encrypt(int * r, int * g, int * b, int width, int height, tpe * right)
 
 	right->encrypt(red, green, blue, width, height);
 	
-	for (int i: red) { std::cout << i << " "; }
+	for (auto index = 0; index < sizeof(*r); index++)
+	{
+		r[index] = red[index];
+		g[index] = green[index];
+		b[index] = blue[index];
+	}
+	
+	for (int i = 0; i < size; i++) {std::cout << r[i] << " "; }
 	std::cout << std::endl;
 }
 
 void decrypt(int * r, int * g, int * b, int width, int height, tpe * right)
 {
-	int size = sizeof(*r) / sizeof(r[0]);
+	int size = width * height;
+	std::cout << size << " --> ";
+	for (int i = 0; i < size; i++) {std::cout << r[i] << " "; }
+	std::cout << std::endl;
+	
 	std::vector<int> red(r, r + size);
 	std::vector<int> green(g, g + size);
 	std::vector<int> blue(b, b + size);
 	
 	right->decrypt(red, green, blue, width, height);
 	
-	for (int i: red) { std::cout << i << " "; }
+	for (auto index = 0; index < sizeof(*r); index++)
+	{
+		r[index] = red[index];
+		g[index] = green[index];
+		b[index] = blue[index];
+	}
+	
+	for (int i = 0; i < size; i++) {std::cout << r[i] << " "; }
 	std::cout << std::endl;
 }

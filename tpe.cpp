@@ -19,6 +19,8 @@ void tpe::encrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 	int m = std::floor(width / base->blocksize);
 	int n = std::floor(height / base->blocksize);
 	
+	std::cout << "m: " << m << " n: " << n << std::endl; 
+	
 	std::vector<int> permutation;
 	int r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2, p, q, x, y;
 	
@@ -29,6 +31,7 @@ void tpe::encrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 	
 	auto start = std::chrono::high_resolution_clock::now();	
 	aes_rnd * s_aes = new aes_rnd(base->key, total_for_sub);
+	//this is where it breaks 
 	aes_rnd * p_aes = new aes_rnd(base->key, total_for_perm);
 	auto endof_aes = std::chrono::high_resolution_clock::now();
 	
@@ -92,9 +95,9 @@ void tpe::encrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 				g_list.clear();
 				b_list.clear();
 				
-				r_list.resize(base->blocksize * base->blocksize);
-				g_list.resize(base->blocksize * base->blocksize);
-				b_list.resize(base->blocksize * base->blocksize);
+				r_list.reserve(base->blocksize * base->blocksize);
+				g_list.reserve(base->blocksize * base->blocksize);
+				b_list.reserve(base->blocksize * base->blocksize);
 				
 				for (int k = 0; k < base->blocksize * base->blocksize; k++)
 				{
@@ -162,9 +165,9 @@ void tpe::decrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 				g_list.clear();
 				b_list.clear();
 				
-				r_list.resize(base->blocksize * base->blocksize);
-				g_list.resize(base->blocksize * base->blocksize);
-				b_list.resize(base->blocksize * base->blocksize);
+				r_list.reserve(base->blocksize * base->blocksize);
+				g_list.reserve(base->blocksize * base->blocksize);
+				b_list.reserve(base->blocksize * base->blocksize);
 				
 				for (int k= 0; k < base->blocksize * base->blocksize; k++)
 				{

@@ -4,7 +4,7 @@ aes_rnd::aes_rnd(char * rkey, int total_need)
 {
 	base->counter = 0;
 	base->data.clear();
-	base->data.resize(total_need);
+	base->data.reserve(total_need);
 	if (sizeof(rkey) == 0) {std::cout << "key not set!" << std::endl; }
 	else
 	{
@@ -41,31 +41,29 @@ int aes_rnd::get_new_couple(int p, int q, bool encrypt)
 		if (encrypt) { rnd = (p + rnd) % (sum + 1); }
 		else { rnd = (p - rnd) % (sum + 1); }
 		if (rnd < 0) { rnd = rnd + sum + 1; }
-		return rnd;
 	}
 	else
 	{
 		if (encrypt)
 		{
 			rnd = 255 - (p - rnd) % (511 - sum);
-			return rnd;
 		}
 		else 
 		{
 			rnd = (255 - p - rnd) % (511 - sum);
 			while (rnd < (sum - 255)) { rnd += 511 - sum; }
-			return rnd;
 		}
 	}
+	return rnd;
 }
 
 std::vector<int> aes_rnd::get_new_permutation(int block_size)
 {
-	std::vector<int> permutation;
 	int length = block_size * block_size;
+	std::vector<int> permutation(length);
 	std::vector<int> indices(length);
 	
-	for (int z = 0; z < length; z++) { permutation.push_back(this->next()); }
+	for (int z = 0; z < length; z++) { permutation[z] = this->next(); }
 	
 	for (int i = 0; i < length; ++i) { indices[i] = i; }
 	
@@ -105,9 +103,9 @@ std::vector<uint8_t> aes_rnd::import(char * right)
 
 void aes_rnd::encrypt(int need)
 {
-	/*std::vector<int> * iv = new std::vector<int>(16);
-	std::vector<int> * plain = new std::vector<int>(need);
-	std::vector<int> * buffer = new std::vector<int>(need);*/
+	/*std::vector<int> iv(16);
+	std::vector<int> plain(need);
+	std::vector<int> buffer(need);*/
 	
 	//this is where the encryption happens????
 	//encrypt plain into buffer using key and iv
@@ -118,7 +116,4 @@ void aes_rnd::encrypt(int need)
 		base->data[index] = rand() % 256;
 	}
 	std::cout << "for testing purposes, random numbers generated" << std::endl;
-	/*delete iv;
-	delete buffer;
-	delete plain;*/
 }
