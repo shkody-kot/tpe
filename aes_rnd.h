@@ -4,9 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
-
-//temp
-#include <stdlib.h>
+#include <cstdlib>
 
 //crypto
 //#include "filters.h"

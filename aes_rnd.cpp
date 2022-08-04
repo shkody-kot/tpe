@@ -80,6 +80,11 @@ std::vector<int> aes_rnd::get_new_permutation(int block_size)
 				temp = indices[index];
 				indices[index] = indices[index + 1];
 				indices[index + 1] = temp;
+				
+				temp = permutation[index];
+				permutation[index] = permutation[index + 1];
+				permutation[index + 1] = temp;
+				
 				swapped = true;
 			}
 		}
@@ -103,6 +108,7 @@ std::vector<uint8_t> aes_rnd::import(char * right)
 
 void aes_rnd::encrypt(int need)
 {
+	std::cout << need << std::endl;
 	/*std::vector<int> iv(16);
 	std::vector<int> plain(need);
 	std::vector<int> buffer(need);*/
@@ -113,7 +119,10 @@ void aes_rnd::encrypt(int need)
 	
 	for (auto index = 0; index < need; index++)
 	{
-		base->data[index] = rand() % 256;
+		base->data[index] = (std::rand() % 256) + 15;
 	}
+	
+	for (int i : base->data) { std::cout << base->data[i] << " "; }
+	std::cout << std::endl;
 	std::cout << "for testing purposes, random numbers generated" << std::endl;
 }
