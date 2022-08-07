@@ -1,19 +1,11 @@
 #include "aes_rnd.h"
 
-aes_rnd::aes_rnd(char * rkey, int total_need)
+aes_rnd::aes_rnd(uint8_t * array)
 {
 	base->counter = 0;
 	base->data.clear();
-	base->data.resize(total_need);
-	if (sizeof(rkey) == 0) {std::cout << "key not set!" << std::endl; }
-	else
-	{
-		//temporary
-		std::cout << "key set" << std::endl;
-		base->key = import(rkey);
-		std::cout << "key 'imported'" << std::endl;
-		encrypt(total_need);
-	}
+	base->data.reserve(sizeof(*array));
+	for (int i : base->data) { i = array[i]; }
 }
 
 aes_rnd::~aes_rnd()

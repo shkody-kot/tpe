@@ -13,8 +13,8 @@ class tpe
 	
 	~tpe();
 	
-	void encrypt(std::vector<uint8_t> &, std::vector<uint8_t> &, std::vector<uint8_t> &, int, int);	//ecrypt(r, g, b)
-	void decrypt(std::vector<uint8_t> &, std::vector<uint8_t> &, std::vector<uint8_t> &, int, int);	//decrypt(r, g, b)
+	uint8_t *  encrypt(uint8_t *, uint8_t *, uint8_t *, int, int);	//ecrypt(data, sub_rndbox, per_rndbox)
+	uint8_t * decrypt(uint8_t *, uint8_t *, uint8_t *, int, int);	//decrypt(data, sub_rndbox, per_rndbox)
 	
 	private:
 	struct heap

@@ -11,7 +11,7 @@
 class aes_rnd
 {
 	public:
-	aes_rnd(char *, int);
+	aes_rnd(uint8_t *);
 	~aes_rnd();
 	
 	uint8_t next();
@@ -28,7 +28,7 @@ class aes_rnd
 	{
 		std::vector<uint8_t> key;
 		int counter;
-		std::vector<int> data;
+		std::vector<uint8_t> data;
 	} * base = new heap;
 	
 };

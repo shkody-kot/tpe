@@ -6,8 +6,8 @@
 
 //extern "C"
 //{
-	void EMSCRIPTEN_KEEPALIVE decrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
-	void EMSCRIPTEN_KEEPALIVE encrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
+	uint8_t * EMSCRIPTEN_KEEPALIVE decrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
+	uint8_t * EMSCRIPTEN_KEEPALIVE encrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
 	tpe * EMSCRIPTEN_KEEPALIVE create(char *, int, int);
 //}
 
@@ -34,49 +34,13 @@ tpe * create(char * key, int iterations, int block)
 	return image;
 }
 
-void encrypt(uint8_t * r, uint8_t * g, uint8_t * b, int width, int height, tpe * right)
+uint8_t * encrypt(uint8_t * image_data, uint8_t * sub_array, uint8_t * perm_array, int width, int height, tpe * right)
 {
-	int size = width * height;
-	
-	std::vector<uint8_t> red(r, r + size);
-	std::vector<uint8_t> green(g, g + size);
-	std::vector<uint8_t> blue(b, b + size);
-	
-	std::cout << "vectors created" << std::endl;
-
-	right->encrypt(red, green, blue, width, height);
-	
-	for (auto index = 0; index < sizeof(*r); index++)
-	{
-		r[index] = red[index];
-		g[index] = green[index];
-		b[index] = blue[index];
-	}
-	
-	for (int i = 0; i < size; i++) {std::cout << r[i] << " "; }
-	std::cout << std::endl;
+	std::cout << sub_array << std::endl;
+	return right->encrypt(image_data, sub_array, perm_array, width, height);
 }
 
-void decrypt(uint8_t * r, uint8_t * g, uint8_t * b, int width, int height, tpe * right)
-{
-	int size = width * height;
-	std::cout << size << " --> ";
-	for (int i = 0; i < size; i++) {std::cout << r[i] << " "; }
-	std::cout << std::endl;
-	
-	std::vector<uint8_t> red(r, r + size);
-	std::vector<uint8_t> green(g, g + size);
-	std::vector<uint8_t> blue(b, b + size);
-	
-	right->decrypt(red, green, blue, width, height);
-	
-	for (auto index = 0; index < sizeof(*r); index++)
-	{
-		r[index] = red[index];
-		g[index] = green[index];
-		b[index] = blue[index];
-	}
-	
-	for (int i = 0; i < size; i++) {std::cout << r[i] << " "; }
-	std::cout << std::endl;
+uint8_t * decrypt(uint8_t * image_data, uint8_t * sub_array, uint8_t * perm_array, int width, int height, tpe * right)
+{	
+	return right->decrypt(image_data, sub_array, perm_array, width, height);
 }

@@ -14,7 +14,7 @@ tpe::~tpe()
 	delete base;
 }
 
-void tpe::encrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::vector<uint8_t> &blue, int width, int height)
+uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_array, int width, int height)
 {
 	//make srruct to contain pixel blocks instead of 3 vecotrs
 	int m = std::floor(width / base->blocksize);
@@ -31,9 +31,9 @@ void tpe::encrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::v
 		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 2) / 2 * 3;
 	
 	auto start = std::chrono::high_resolution_clock::now();	
-	aes_rnd * s_aes = new aes_rnd(base->key, total_for_sub);
+	aes_rnd * s_aes = new aes_rnd(sub_array);
 	//this is where it breaks 
-	aes_rnd * p_aes = new aes_rnd(base->key, total_for_perm);
+	aes_rnd * p_aes = new aes_rnd(perm_array);
 	auto endof_aes = std::chrono::high_resolution_clock::now();
 	
 	std::cout << "initialized" << std::endl;
@@ -46,7 +46,7 @@ void tpe::encrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::v
 		{
 			for (int j = 0; j < m; j++)
 			{
-				std::cout << "i: " << i << " j: " << j << " blocksize: " << base->blocksize << std::endl;
+				//std::cout << "i: " << i << " j: " << j << " blocksize: " << base->blocksize << std::endl;
 				for (int k = 0; k < base->blocksize * base->blocksize - 1; k += 2)
 				{
 					p = k / base->blocksize;
@@ -55,13 +55,13 @@ void tpe::encrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::v
 					y = (k + 1) % base->blocksize;
 					
 					//fetch pixel pairs
-					r1 = red[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
-					g1 = green[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
-					b1 = blue[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
+					r1 = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4];
+					g1 = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 1];
+					b1 = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 2];
 					
-					r2 = red[(i * width * base->blocksize + x * width + j * base->blocksize + y)];
-					g2 = green[(i * width * base->blocksize + x * width + j * base->blocksize + y)];
-					b2 = blue[(i * width * base->blocksize + x * width + j * base->blocksize + y)];
+					r2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4];
+					g2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1];
+					b2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2];
 					
 					//generate random numbers fot pixels bt keep sum
 					rt1 = s_aes->get_new_couple(r1, r2, true);
@@ -74,13 +74,13 @@ void tpe::encrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::v
 					bt2 = b1 + b2 - bt1;
 					
 					//replace pixels with random pixels
-					red[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = rt1;
-					green[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = gt1;
-					blue[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = bt1;
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4] = rt1;
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 1] = gt1;
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 2] = bt1;
 					
-					red[(i * width * base->blocksize + x * width + j * base->blocksize + y)] = rt2;
-					green[(i * width * base->blocksize + x * width + j * base->blocksize + y)] = gt2;
-					blue[(i * width * base->blocksize + x * width + j * base->blocksize + y)] = bt2;
+					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4] = rt2;
+					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1] = gt2;
+					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2] = bt2;
 				}
 			}
 		}
@@ -106,9 +106,9 @@ void tpe::encrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::v
 				{
 					p = k / base->blocksize;
 					q = k % base->blocksize;
-					r = red[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
-					g = green[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
-					b = blue[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
+					r = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4];
+					g = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 1];
+					b = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 2];
 					r_list[k] = r;
 					g_list[k] = g;
 					b_list[k] = b;
@@ -121,9 +121,9 @@ void tpe::encrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::v
 					p = k / base->blocksize;
 					q = k % base->blocksize;
 										
-					red[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = r_list[permutation[k]];
-					green[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = g_list[permutation[k]];
-					blue[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = b_list[permutation[k]];
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4] = r_list[permutation[k]];
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 1] = g_list[permutation[k]];
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 2] = b_list[permutation[k]];
 				}
 			}
 		}
@@ -137,10 +137,11 @@ void tpe::encrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::v
 	std::cout << "TPE encrypt FIN" << std::endl;
 	delete s_aes;
 	delete p_aes;
+	return image;
 }
 
 
-void tpe::decrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::vector<uint8_t> &blue, int width, int height)
+uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_array, int width, int height)
 {
 	int m = std::floor(width / base->blocksize);
 	int n = std::floor(height / base->blocksize);
@@ -153,8 +154,8 @@ void tpe::decrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::v
 	int total_for_sub = base->iterations * n * m * 
 		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 2) / 2 * 3;
 	
-	aes_rnd * s_aes = new aes_rnd(base->key, total_for_sub);
-	aes_rnd * p_aes = new aes_rnd(base->key, total_for_perm);
+	aes_rnd * s_aes = new aes_rnd(sub_array);
+	aes_rnd * p_aes = new aes_rnd(perm_array);
 	
 	auto start = std::chrono::high_resolution_clock::now();	
 	for (int ccc = 0; ccc < base->iterations; ccc++)
@@ -181,9 +182,9 @@ void tpe::decrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::v
 				{
 					p = k / base->blocksize;
 					q = k % base->blocksize;
-					r = red[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
-					g = green[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
-					b = blue[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
+					r = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4];
+					g = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 1];
+					b = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 2];
 					r_list[k] = r;
 					g_list[k] = g;
 					b_list[k] = b;
@@ -194,9 +195,9 @@ void tpe::decrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::v
 				{
 					p = permutation[k] / base->blocksize;
 					q = k % base->blocksize;
-					red[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = r_list[k];
-					green[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = g_list[k];
-					blue[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = b_list[k];
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4] = r_list[k];
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 1] = g_list[k];
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 2] = b_list[k];
 				}
 			}
 		}
@@ -213,13 +214,13 @@ void tpe::decrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::v
 					y = (k + 1) % base->blocksize;
 					
 					//fetch pixel pairs
-					r1 = red[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
-					g1 = green[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
-					b1 = blue[(i * width * base->blocksize + p * width + j * base->blocksize + q)];
+					r1 = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4];
+					g1 = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 1];
+					b1 = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 2];
 					
-					r2 = red[(i * width * base->blocksize + x * width + j * base->blocksize + y)];
-					g2 = green[(i * width * base->blocksize + x * width + j * base->blocksize + y)];
-					b2 = blue[(i * width * base->blocksize + x * width + j * base->blocksize + y)];
+					r2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4];
+					g2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1];
+					b2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2];
 					
 					//generate the same random numbers but backwards this time
 					rt1 = s_aes->get_new_couple(r1, r2, false);
@@ -232,13 +233,13 @@ void tpe::decrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::v
 					bt2 = b1 + b2 - bt1;
 					
 					//replace pixels with random pixels
-					red[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = rt1;
-					green[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = gt1;
-					blue[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = bt1;
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4] = rt1;
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 1] = gt1;
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 2] = bt1;
 					
-					red[(i * width * base->blocksize + x * width + j * base->blocksize + y)] = rt2;
-					green[(i * width * base->blocksize + x * width + j * base->blocksize + y)] = gt2;
-					blue[(i * width * base->blocksize + x * width + j * base->blocksize + y)] = bt2;
+					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4] = rt2;
+					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1] = gt2;
+					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2] = bt2;
 				}
 			}
 		}
@@ -248,4 +249,5 @@ void tpe::decrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::v
 	std::cout << "TPE decrypt FIN" << std::endl;
 	delete s_aes;
 	delete p_aes;
+	return image;
 }
