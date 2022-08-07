@@ -7,10 +7,6 @@
 #include <cstdlib>
 
 //crypto
-//#include "filters.h"
-//#include "aes.h"
-//#include "ccm.h"
-//#include "assert.h"
 
 class aes_rnd
 {
@@ -18,8 +14,8 @@ class aes_rnd
 	aes_rnd(char *, int);
 	~aes_rnd();
 	
-	int next();
-	int get_new_couple(int, int, bool);
+	uint8_t next();
+	uint8_t get_new_couple(uint8_t, uint8_t, bool);
 	std::vector<int> get_new_permutation(int);
 	
 	int get_ctr();

@@ -171,7 +171,7 @@ var encrypt = function ()
 		r = allocate(red, 'i8', ALLOC_NORMAL);
 		g = allocate(green, 'i8', ALLOC_NORMAL);
 		b = allocate(blue, 'i8', ALLOC_NORMAL);
-		Module.__Z7encryptPiS_S_iiP3tpe(r, g, b, width, height, tpe);
+		Module.__Z7encryptPhS_S_iiP3tpe(r, g, b, width, height, tpe);
 	}
 	finally
 	{
@@ -302,7 +302,7 @@ var decrypt = function ()
 		r = allocate(red, 'i8', ALLOC_NORMAL);
 		g = allocate(green, 'i8', ALLOC_NORMAL);
 		b = allocate(blue, 'i8', ALLOC_NORMAL);
-		Module.__Z7decryptPiS_S_iiP3tpe(r, g, b, width, height, tpe);
+		Module.__Z7decryptPhS_S_iiP3tpe(r, g, b, width, height, tpe);
 	}
 	finally
 	{

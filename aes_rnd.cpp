@@ -4,7 +4,7 @@ aes_rnd::aes_rnd(char * rkey, int total_need)
 {
 	base->counter = 0;
 	base->data.clear();
-	base->data.reserve(total_need);
+	base->data.resize(total_need);
 	if (sizeof(rkey) == 0) {std::cout << "key not set!" << std::endl; }
 	else
 	{
@@ -21,21 +21,20 @@ aes_rnd::~aes_rnd()
 	delete base;
 }
 
-int aes_rnd::next()
+uint8_t aes_rnd::next()
 {
 	//std::cout << "aes.next();" << std::endl;
-	base->counter++;
-	return base->data[base->counter - 1];
+	return base->data[base->counter++];
 }
 
 int aes_rnd::get_ctr() { return base->counter; }
 
 void aes_rnd::set_ctr(int right) { base->counter = right; }
 
-int aes_rnd::get_new_couple(int p, int q, bool encrypt)
+uint8_t aes_rnd::get_new_couple(uint8_t p, uint8_t q, bool encrypt)
 {
-	int rnd = this->next();
-	int sum = p + q;
+	uint8_t rnd = this->next();
+	uint8_t sum = p + q;
 	if (sum <= 255)
 	{
 		if (encrypt) { rnd = (p + rnd) % (sum + 1); }
@@ -60,7 +59,7 @@ int aes_rnd::get_new_couple(int p, int q, bool encrypt)
 std::vector<int> aes_rnd::get_new_permutation(int block_size)
 {
 	int length = block_size * block_size;
-	std::vector<int> permutation(length);
+	std::vector<uint8_t> permutation(length);
 	std::vector<int> indices(length);
 	
 	for (int z = 0; z < length; z++) { permutation[z] = this->next(); }
@@ -92,6 +91,8 @@ std::vector<int> aes_rnd::get_new_permutation(int block_size)
 		else { sorted = true; }					//break
 	}
 	
+	std::cout << "end for permutation in aes_rand; blocksize = " << block_size << std::endl;
+	
 	return indices;
 	
 }
@@ -108,21 +109,23 @@ std::vector<uint8_t> aes_rnd::import(char * right)
 
 void aes_rnd::encrypt(int need)
 {
-	std::cout << need << std::endl;
-	/*std::vector<int> iv(16);
+	std::cout << "need = " << need << std::endl;
+	std::vector<int> iv(16);
 	std::vector<int> plain(need);
-	std::vector<int> buffer(need);*/
+	std::vector<int> buffer(need);
 	
 	//this is where the encryption happens????
 	//encrypt plain into buffer using key and iv
 	//don't do the "converting it back to string" because i need an int vector
 	
+	
 	for (auto index = 0; index < need; index++)
 	{
-		base->data[index] = (std::rand() % 256) + 15;
+		//this doesn't work because it's a menace (deragotory)
+		base->data[index] = std::rand() % 256;
 	}
 	
-	for (int i : base->data) { std::cout << base->data[i] << " "; }
+	//for (int i : base->data) { std::cout << i << "-"; }
 	std::cout << std::endl;
 	std::cout << "for testing purposes, random numbers generated" << std::endl;
 }

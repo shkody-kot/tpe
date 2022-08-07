@@ -14,15 +14,16 @@ tpe::~tpe()
 	delete base;
 }
 
-void tpe::encrypt(std::vector<int> &red, std::vector<int> &green, std::vector<int> &blue, int width, int height)
+void tpe::encrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::vector<uint8_t> &blue, int width, int height)
 {
+	//make srruct to contain pixel blocks instead of 3 vecotrs
 	int m = std::floor(width / base->blocksize);
 	int n = std::floor(height / base->blocksize);
 	
 	std::cout << "m: " << m << " n: " << n << std::endl; 
 	
 	std::vector<int> permutation;
-	int r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2, p, q, x, y;
+	uint8_t r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2, p, q, x, y;
 	
 	//substitute pixels	
 	int total_for_perm = base->iterations * n * m * base->blocksize * base->blocksize;
@@ -40,10 +41,12 @@ void tpe::encrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 	for (auto ccc = 0; ccc < base->iterations; ccc++)
 	{
 		//substitution
+		std::cout << "blocksize: " << base->blocksize << std::endl;
 		for (int i = 0; i < n; i++)
 		{
 			for (int j = 0; j < m; j++)
 			{
+				std::cout << "i: " << i << " j: " << j << " blocksize: " << base->blocksize << std::endl;
 				for (int k = 0; k < base->blocksize * base->blocksize - 1; k += 2)
 				{
 					p = k / base->blocksize;
@@ -85,8 +88,8 @@ void tpe::encrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 		std::cout << "substituted" << std::endl;
 		
 		//permutation
-		int r, g, b;
-		std::vector<int> r_list, b_list, g_list;
+		uint8_t r, g, b;
+		std::vector<uint8_t> r_list, b_list, g_list;
 		for (int i = 0; i < n; i++)
 		{
 			for (int j = 0; j < m; j++)
@@ -112,10 +115,12 @@ void tpe::encrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 				}
 				
 				permutation = p_aes->get_new_permutation(base->blocksize);
-				for (int k =0; k < base->blocksize * base->blocksize; k++)
+				
+				for (int k = 0; k < base->blocksize * base->blocksize; k++)
 				{
 					p = k / base->blocksize;
 					q = k % base->blocksize;
+										
 					red[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = r_list[permutation[k]];
 					green[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = g_list[permutation[k]];
 					blue[(i * width * base->blocksize + p * width + j * base->blocksize + q)] = b_list[permutation[k]];
@@ -123,6 +128,9 @@ void tpe::encrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 			}
 		}
 	}
+	
+	std::cout << "permutation complete (main); blocksize: " << base->blocksize << std::endl;
+	
 	auto end = std::chrono::high_resolution_clock::now();
 	std::cout << "aes: " << std::chrono::duration_cast<std::chrono::milliseconds>(endof_aes - start).count() << std::endl;
 	std::cout << "after aes: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - endof_aes).count() << std::endl;
@@ -132,13 +140,13 @@ void tpe::encrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 }
 
 
-void tpe::decrypt(std::vector<int> &red, std::vector<int> &green, std::vector<int> &blue, int width, int height)
+void tpe::decrypt(std::vector<uint8_t> &red, std::vector<uint8_t> &green, std::vector<uint8_t> &blue, int width, int height)
 {
 	int m = std::floor(width / base->blocksize);
 	int n = std::floor(height / base->blocksize);
 	
 	std::vector<int> permutation;
-	int r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2, p, q, x, y;
+	uint8_t r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2, p, q, x, y;
 	
 	//substitute pixels	
 	int total_for_perm = base->iterations * n * m * base->blocksize * base->blocksize;
@@ -155,8 +163,8 @@ void tpe::decrypt(std::vector<int> &red, std::vector<int> &green, std::vector<in
 		p_aes->set_ctr(base->iterations - (ccc + 1) * (total_for_perm / base->iterations));
 		
 		//permutation reverse
-		int r, g, b;
-		std::vector<int> r_list, g_list, b_list;
+		uint8_t r, g, b;
+		std::vector<uint8_t> r_list, g_list, b_list;
 		for (int i = 0; i < n; i++)
 		{			
 			for (int j = 0; j < m; j++)
