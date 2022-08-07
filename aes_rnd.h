@@ -11,7 +11,7 @@
 class aes_rnd
 {
 	public:
-	aes_rnd(uint8_t *);
+	aes_rnd(uint8_t *, int);
 	~aes_rnd();
 	
 	uint8_t next();
@@ -22,8 +22,6 @@ class aes_rnd
 	void set_ctr(int);
 	
 	private:
-	std::vector<uint8_t> import(char *);
-	void encrypt(int);
 	struct heap
 	{
 		std::vector<uint8_t> key;

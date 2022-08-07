@@ -23,7 +23,8 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	std::cout << "m: " << m << " n: " << n << std::endl; 
 	
 	std::vector<int> permutation;
-	uint8_t r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2, p, q, x, y;
+	uint8_t r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2;
+	int p, q, x, y;
 	
 	//substitute pixels	
 	int total_for_perm = base->iterations * n * m * base->blocksize * base->blocksize;
@@ -31,27 +32,28 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 2) / 2 * 3;
 	
 	auto start = std::chrono::high_resolution_clock::now();	
-	aes_rnd * s_aes = new aes_rnd(sub_array);
+	aes_rnd * s_aes = new aes_rnd(sub_array, total_for_sub);
 	//this is where it breaks 
-	aes_rnd * p_aes = new aes_rnd(perm_array);
+	aes_rnd * p_aes = new aes_rnd(perm_array, total_for_perm);
 	auto endof_aes = std::chrono::high_resolution_clock::now();
 	
 	std::cout << "initialized" << std::endl;
 	
 	for (auto ccc = 0; ccc < base->iterations; ccc++)
 	{
-		//substitution
-		std::cout << "blocksize: " << base->blocksize << std::endl;
+		//substitution begins
+		//for each row of blocks...
 		for (int i = 0; i < n; i++)
 		{
+			//for each column of blocks...
 			for (int j = 0; j < m; j++)
 			{
-				//std::cout << "i: " << i << " j: " << j << " blocksize: " << base->blocksize << std::endl;
-				for (int k = 0; k < base->blocksize * base->blocksize - 1; k += 2)
+				//for each pixel within those blocks
+				for (int k = 0; k < base->blocksize * base->blocksize - 1; k = k + 2)
 				{
-					p = k / base->blocksize;
-					q = k % base->blocksize;
-					x = (k + 1) / base->blocksize;
+					p = std::floor(k / base->blocksize); 			//row# of pixel
+					q = k % base->blocksize;			//col# of pixel
+					x = std::floor((k + 1) / base->blocksize);		//adjacent pixel
 					y = (k + 1) % base->blocksize;
 					
 					//fetch pixel pairs
@@ -104,7 +106,7 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 				
 				for (int k = 0; k < base->blocksize * base->blocksize; k++)
 				{
-					p = k / base->blocksize;
+					p = std::floor(k / base->blocksize);
 					q = k % base->blocksize;
 					r = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4];
 					g = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 1];
@@ -118,7 +120,7 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 				
 				for (int k = 0; k < base->blocksize * base->blocksize; k++)
 				{
-					p = k / base->blocksize;
+					p = std::floor(k / base->blocksize);
 					q = k % base->blocksize;
 										
 					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4] = r_list[permutation[k]];
@@ -147,15 +149,16 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	int n = std::floor(height / base->blocksize);
 	
 	std::vector<int> permutation;
-	uint8_t r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2, p, q, x, y;
+	uint8_t r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2;
+	int p, q, x, y;
 	
 	//substitute pixels	
 	int total_for_perm = base->iterations * n * m * base->blocksize * base->blocksize;
 	int total_for_sub = base->iterations * n * m * 
 		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 2) / 2 * 3;
 	
-	aes_rnd * s_aes = new aes_rnd(sub_array);
-	aes_rnd * p_aes = new aes_rnd(perm_array);
+	aes_rnd * s_aes = new aes_rnd(sub_array, total_for_sub);
+	aes_rnd * p_aes = new aes_rnd(perm_array, total_for_perm);
 	
 	auto start = std::chrono::high_resolution_clock::now();	
 	for (int ccc = 0; ccc < base->iterations; ccc++)
@@ -206,7 +209,7 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 		{
 			for (int j = 0; j < m; j++)
 			{
-				for (int k = 0; k < base->blocksize * base->blocksize - 1; k += 2)
+				for (int k = 0; k < base->blocksize * base->blocksize - 1; k = k + 2)
 				{
 					p = k / base->blocksize;
 					q = k % base->blocksize;

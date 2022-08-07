@@ -147,7 +147,7 @@ var draw_thumbnail = function (icanvas, tcanvas) {
 	console.log("- draw_thumbnail");
 };
 
-var encrypt = async function ()
+var encrypt = function ()
 {
 	console.log("+ encrypt");
 	var ctx = document.getElementById("canvas-og").getContext("2d");
@@ -164,35 +164,34 @@ var encrypt = async function ()
 	let total_for_perm = tpe_iteration * n * m * tpe_blocksize * tpe_blocksize;
 	let total_for_sub = tpe_iteration * n * m * 
 		(tpe_blocksize * tpe_blocksize - (tpe_blocksize * tpe_blocksize) % 2) / 2 * 3;
-	
-	sub_array = new random_box(tpe_key, total_for_sub, function()
-	{
-		console.log("sub" + sub_array);
-		perm_array = new random_box(tpe_key, total_for_perm, function()
+	(async () => {
+		sub_array = await pseudo_rnd(tpe_key, total_for_sub);
+		perm_array =  await pseudo_rnd(tpe_key, total_for_perm);
+		
+		let image, sub, perm, encrypted;
+		try
 		{
-			let image, sub, perm, encrypted;
-			try
-			{
-				image = allocate(image_data.data, 'i8', ALLOC_NORMAL);
-				sub = allocate(sub_array, 'i8', ALLOC_NORMAL);
-				perm = allocate(perm_array, 'i8', ALLOC_NORMAL);
-				encrypted = Module.__Z7encryptPhS_S_iiP3tpe(image, sub, perm, width, height, tpe);
-				console.log(encrypted);
-				image_data.data = Module.HEAPU8.subarray(encrypted, encrypted + image_data.data.length);
-			}
-			finally
-			{
-				Module._free(image);
-				Module._free(sub);
-				Module._free(perm);
-			}
-			
-			ctx_out.putImageData(image_data, 0, 0);
-			image_e = document.getElementById("canvas-en");
-			image_et = document.getElementById("canvas-ent");
-			draw_thumbnail(image_e, image_et);
-		});
-	});
+			image = allocate(image_data.data, 'i8', ALLOC_NORMAL);
+			sub = allocate(sub_array, 'i8', ALLOC_NORMAL);
+			perm = allocate(perm_array, 'i8', ALLOC_NORMAL);
+			encrypted = Module.__Z7encryptPhS_S_iiP3tpe(image, sub, perm, width, height, tpe);
+			encrypted = Module.HEAPU8.subarray(encrypted, encrypted + image_data.data.length);
+			console.log(encrypted);
+			for (var i = 0; i < image_data.data.length; i += 1) { image_data.data[i] = encrypted[i];  }
+		}
+		finally
+		{
+			Module._free(image);
+			Module._free(sub);
+			Module._free(perm);
+			Module._free(encrypted);
+		}
+		
+		ctx_out.putImageData(image_data, 0, 0);
+		image_e = document.getElementById("canvas-en");
+		image_et = document.getElementById("canvas-ent");
+		draw_thumbnail(image_e, image_et);
+	})();
 	
 	document.getElementById("decrypt").disabled = false;
 };
@@ -297,35 +296,34 @@ var decrypt = function ()
 	let total_for_sub = tpe_iteration * n * m * 
 		(tpe_blocksize * tpe_blocksize - (tpe_blocksize * tpe_blocksize) % 2) / 2 * 3;
 	
-	sub_array = new random_box(tpe_key, total_for_sub, function()
-	{
-		perm_array = new random_box(tpe_key, total_for_perm, function()
+	(async () => {
+		sub_array = await pseudo_rnd(tpe_key, total_for_sub);
+		perm_array =  await pseudo_rnd(tpe_key, total_for_perm);
+		
+		let image, sub, perm, decrypted;
+		try
 		{
-			let image, sub, perm, decrypted;
-			try
-			{
-				image = allocate(image_data.data, 'i8', ALLOC_NORMAL);
-				sub = allocate(sub_array, 'i8', ALLOC_NORMAL);
-				perm = allocate(perm_array, 'i8', ALLOC_NORMAL);
-				decrypted = Module.__Z7decryptPhS_S_iiP3tpe(image, sub, perm, width, height, tpe);
-				console.log(decrypted);
-				image_data.data = Module.HEAPU8.subarray(decrypted, decrypted + image_data.data.length);
-			}
-			finally
-			{
-				Module._free(image);
-				Module._free(sub);
-				Module._free(perm);
-			}
-			
-			ctx_out.putImageData(image_data, 0, 0);
-			image_e = document.getElementById("canvas-en");
-			image_et = document.getElementById("canvas-ent");
-			draw_thumbnail(image_e, image_et);
-		});
-	
-		console.log("sub" + sub_array);
-	});
+			image = allocate(image_data.data, 'i8', ALLOC_NORMAL);
+			sub = allocate(sub_array, 'i8', ALLOC_NORMAL);
+			perm = allocate(perm_array, 'i8', ALLOC_NORMAL);
+			decrypted = Module.__Z7decryptPhS_S_iiP3tpe(image, sub, perm, width, height, tpe);
+			decrypted = Module.HEAPU8.subarray(decrypted, decrypted + image_data.data.length);
+			for (var i = 0; i < image_data.data.length; i += 1) { image_data.data[i] = decrypted[i];  }
+		}
+		finally
+		{
+			Module._free(image);
+			Module._free(sub);
+			Module._free(perm);
+			Module._free(decrypted);
+			Module._free(tpe);
+		}
+		
+		ctx_out.putImageData(image_data, 0, 0);
+		image_d = document.getElementById("canvas-de");
+		image_dt = document.getElementById("canvas-det");
+		draw_thumbnail(image_d, image_dt);
+	})();
 };
 
 var setDownloadStatus = function (status) {
@@ -354,70 +352,39 @@ var download = function () {
 	setDownloadStatus("Done!");
 };
 
-var random_box = function pseudo_rnd(key, need, callback)
+async function pseudo_rnd(key, need)
 {
 	let data = new Uint8Array(need);
+	var cipher_text;
 	//returns Promise containing CryptoKey object
-	/*const enc_key = await window.crypto.subtle.importKey(
-		"jwk",
-		{
-			kty: "oct",
-			k: key, 
-			alg: "A256CTR",
-			ext: true
-		},
-		{ name: "AES-CTR" },
-		false,
-		["encrypt", "decrypt"]
-	);
-	
-	//encrypts the data (all 0's) and returns an array buffer
-	const cipher_text = await window.crypto.subtle.encrypt(
-		{
-			name: "AES-CTR",
-			counter: new Uint8Array(16),
-			length: 128,
-		},
-		enc_key,
-		data
-	);
-	
-	console.log(cipher_text);
-	callback();*/
-	window.crypto.subtle.importKey(
-		"jwk",
-		{
-			kty: "oct",
-			k: key,
-			alg: "A256CTR",
-			ext: true
-		}, { name: "AES-CTR" },
-		false, //whether the key is extractable (i.e. can be used in exportKey)
-		["encrypt", "decrypt"] //can "encrypt", "decrypt", "wrapKey", or "unwrapKey"
-	)
-	.then(function (key) {
-		//returns the symmetric key
-		window.crypto.subtle.encrypt(
+	try
+	{
+		const enc_key = await window.crypto.subtle.importKey(
+			"jwk",
+			{
+				kty: "oct",
+				k: key, 
+				alg: "A256CTR",
+				ext: true
+			},
+			{ name: "AES-CTR" },
+			false,
+			["encrypt", "decrypt"]
+		);
+		
+		//encrypts the data (all 0's) and returns an array buffer
+		cipher_text = await window.crypto.subtle.encrypt(
 			{
 				name: "AES-CTR",
 				counter: new Uint8Array(16),
-				length: 128 //can be 1-128
+				length: 128,
 			},
-			key, //from generateKey or importKey above
-			data //ArrayBuffer of data you want to encrypt
-		)
-		.then(function (encrypted) {
-			data = new Uint8Array(encrypted);
-			//console.log("data = " + data);
-			console.log("AES init FIN");
-			callback(data);
-			//return data;
-		})
-		.catch(function (err) {
-			console.error(err.message);
-		});
-	})
-	.catch(function (err) {
-		console.error(err.message);
-	});
+			enc_key,
+			data
+		);
+	} finally 
+	{
+		data = new Uint8Array(cipher_text);
+		return data;
+	}
 };
