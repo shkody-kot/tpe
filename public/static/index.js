@@ -164,6 +164,8 @@ var encrypt = function ()
 	let total_for_perm = tpe_iteration * n * m * tpe_blocksize * tpe_blocksize;
 	let total_for_sub = tpe_iteration * n * m * (tpe_blocksize * tpe_blocksize - (tpe_blocksize * tpe_blocksize) % 2) / 2 * 3;
 	
+	console.log(image_data.data);
+	
 	(async () => {
 		sub_array = await pseudo_rnd(tpe_key, total_for_sub);
 		perm_array =  await pseudo_rnd(tpe_key, total_for_perm);
@@ -308,6 +310,7 @@ var decrypt = function ()
 			perm = allocate(perm_array, 'i8', ALLOC_NORMAL);
 			decrypted = Module.__Z7decryptPhS_S_iiP3tpe(image, sub, perm, width, height, tpe);
 			decrypted = Module.HEAPU8.subarray(decrypted, decrypted + image_data.data.length);
+			console.log(decrypted);
 			for (var i = 0; i < image_data.data.length; i += 1) { image_data.data[i] = decrypted[i];  }
 		}
 		finally

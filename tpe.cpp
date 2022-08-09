@@ -182,6 +182,7 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 				g_list.clear();
 				b_list.clear();
 				
+				//copy pixels per block into temporary lists by color
 				for (int k = 0; k < base->blocksize * base->blocksize; k++)
 				{
 					p = k / base->blocksize;
@@ -195,6 +196,7 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 				}
 				permutation = p_aes->get_new_permutation(base->blocksize);
 				
+				//unscramble pixels back into order they were in before encryption
 				for (int k = 0; k < base->blocksize * base->blocksize; k++)
 				{
 					p = permutation[k] / base->blocksize;
@@ -206,16 +208,12 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 			}
 		}
 		
-		std::cout << "perm #" << ccc << ": ";
-		for (int i = 0; i < 15; i++) { std::cout << static_cast<int>(image[i]) << "-"; }
-		std::cout << std::endl;
-		
 		//substitution reverse
 		for (int i = 0; i < n; i++)
 		{
 			for (int j = 0; j < m; j++)
 			{
-				for (int k = 0; k < base->blocksize * base->blocksize - 1; k = k + 2)
+				for (int k = 0; k < base->blocksize * base->blocksize - 1; k += 2)
 				{
 					p = k / base->blocksize;
 					q = k % base->blocksize;
@@ -252,10 +250,6 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 				}
 			}
 		}
-		
-		std::cout << "sub #" << ccc << ": ";		
-		for (int i = 0; i < 15; i++) { std::cout << static_cast<int>(image[i]) << "-"; }
-		std::cout << std::endl;
 	}
 	auto end = std::chrono::high_resolution_clock::now();
 	std::cout << "decryption: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;

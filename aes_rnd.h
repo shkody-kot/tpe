@@ -14,6 +14,7 @@ class aes_rnd
 	~aes_rnd();
 	
 	uint8_t next();
+	uint8_t prev();
 	uint8_t get_new_couple(uint8_t, uint8_t, bool);
 	std::vector<int> get_new_permutation(int);
 	
