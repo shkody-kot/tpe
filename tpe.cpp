@@ -6,7 +6,7 @@ tpe::tpe(char * rkey, int riterations, int rblocksize)
 	strcpy(base->key, rkey);
 	base->iterations = riterations;
 	base->blocksize = rblocksize;
-	std::cout << base->key << " -- " << base->iterations << " -- " << base->blocksize << std::endl; 
+	//std::cout << base->key << " -- " << base->iterations << " -- " << base->blocksize << std::endl; 
 }
 
 tpe::~tpe()
@@ -16,25 +16,23 @@ tpe::~tpe()
 
 uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_array, int width, int height)
 {
-	//make srruct to contain pixel blocks instead of 3 vecotrs
 	int m = std::floor(width / base->blocksize);
 	int n = std::floor(height / base->blocksize);
-	
-	std::cout << "m: " << m << " n: " << n << std::endl; 
 	
 	std::vector<int> permutation;
 	uint8_t r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2;
 	int p, q, x, y;
 	
-	//substitute pixels	
+	//calculate sizes for each random number box	
 	int total_for_perm = base->iterations * n * m * base->blocksize * base->blocksize;
 	int total_for_sub = base->iterations * n * m * 
 		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 2) / 2 * 3;
 	
 	auto start = std::chrono::high_resolution_clock::now();	
-	aes_rnd * s_aes = new aes_rnd(sub_array, total_for_sub);
-	//this is where it breaks 
+	//create a pseudo random number box for both the subsitution and permutation
+	aes_rnd * s_aes = new aes_rnd(sub_array, total_for_sub); 
 	aes_rnd * p_aes = new aes_rnd(perm_array, total_for_perm);
+	
 	auto endof_aes = std::chrono::high_resolution_clock::now();
 	
 	std::cout << "initialized" << std::endl;
@@ -49,11 +47,11 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 			for (int j = 0; j < m; j++)
 			{
 				//for each pixel within those blocks
-				for (int k = 0; k < base->blocksize * base->blocksize - 1; k = k + 2)
+				for (int k = 0; k < base->blocksize * base->blocksize; k += 2)
 				{
-					p = std::floor(k / base->blocksize); 			//row# of pixel
+					p = k / base->blocksize; 			//row# of pixel
 					q = k % base->blocksize;			//col# of pixel
-					x = std::floor((k + 1) / base->blocksize);		//adjacent pixel
+					x = (k + 1) / base->blocksize;		//adjacent pixel
 					y = (k + 1) % base->blocksize;
 					
 					//fetch pixel pairs
@@ -87,22 +85,22 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 			}
 		}
 		
-		std::cout << "substituted" << std::endl;
-		
 		//permutation
 		uint8_t r, g, b;
+		permutation.clear();
 		std::vector<uint8_t> r_list, b_list, g_list;
+		
+		r_list.reserve(base->blocksize * base->blocksize);
+		g_list.reserve(base->blocksize * base->blocksize);
+		b_list.reserve(base->blocksize * base->blocksize);
+		
 		for (int i = 0; i < n; i++)
 		{
 			for (int j = 0; j < m; j++)
 			{
-				r_list.clear();
-				g_list.clear();
-				b_list.clear();
-				
-				r_list.reserve(base->blocksize * base->blocksize);
-				g_list.reserve(base->blocksize * base->blocksize);
-				b_list.reserve(base->blocksize * base->blocksize);
+				//r_list.clear();
+				//g_list.clear();
+				//b_list.clear();
 				
 				for (int k = 0; k < base->blocksize * base->blocksize; k++)
 				{
@@ -139,6 +137,8 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	std::cout << "TPE encrypt FIN" << std::endl;
 	delete s_aes;
 	delete p_aes;
+	//for (int i = 0; i < width * height; i++) { std::cout << static_cast<int>(image[i]) << "-"; }
+	//std::cout << std::endl;
 	return image;
 }
 
@@ -163,12 +163,17 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	auto start = std::chrono::high_resolution_clock::now();	
 	for (int ccc = 0; ccc < base->iterations; ccc++)
 	{
-		s_aes->set_ctr(base->iterations - (ccc + 1) * (total_for_sub / base->iterations));
-		p_aes->set_ctr(base->iterations - (ccc + 1) * (total_for_perm / base->iterations));
+		s_aes->set_ctr((base->iterations - (ccc + 1)) * (total_for_sub / base->iterations));
+		p_aes->set_ctr((base->iterations - (ccc + 1)) * (total_for_perm / base->iterations));
 		
 		//permutation reverse
 		uint8_t r, g, b;
 		std::vector<uint8_t> r_list, g_list, b_list;
+		
+		r_list.reserve(base->blocksize * base->blocksize);
+		g_list.reserve(base->blocksize * base->blocksize);
+		b_list.reserve(base->blocksize * base->blocksize);
+				
 		for (int i = 0; i < n; i++)
 		{			
 			for (int j = 0; j < m; j++)
@@ -177,11 +182,7 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 				g_list.clear();
 				b_list.clear();
 				
-				r_list.reserve(base->blocksize * base->blocksize);
-				g_list.reserve(base->blocksize * base->blocksize);
-				b_list.reserve(base->blocksize * base->blocksize);
-				
-				for (int k= 0; k < base->blocksize * base->blocksize; k++)
+				for (int k = 0; k < base->blocksize * base->blocksize; k++)
 				{
 					p = k / base->blocksize;
 					q = k % base->blocksize;
@@ -197,13 +198,18 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 				for (int k = 0; k < base->blocksize * base->blocksize; k++)
 				{
 					p = permutation[k] / base->blocksize;
-					q = k % base->blocksize;
+					q = permutation[k] % base->blocksize;
 					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4] = r_list[k];
 					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 1] = g_list[k];
 					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 2] = b_list[k];
 				}
 			}
 		}
+		
+		std::cout << "perm #" << ccc << ": ";
+		for (int i = 0; i < 15; i++) { std::cout << static_cast<int>(image[i]) << "-"; }
+		std::cout << std::endl;
+		
 		//substitution reverse
 		for (int i = 0; i < n; i++)
 		{
@@ -246,6 +252,10 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 				}
 			}
 		}
+		
+		std::cout << "sub #" << ccc << ": ";		
+		for (int i = 0; i < 15; i++) { std::cout << static_cast<int>(image[i]) << "-"; }
+		std::cout << std::endl;
 	}
 	auto end = std::chrono::high_resolution_clock::now();
 	std::cout << "decryption: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;

@@ -36,8 +36,6 @@ tpe * create(char * key, int iterations, int block)
 
 uint8_t * encrypt(uint8_t * image_data, uint8_t * sub_array, uint8_t * perm_array, int width, int height, tpe * right)
 {
-	for (int i = 0 ; i < 16; i++) { std::cout << static_cast<int>(image_data[i]) << "-"; }
-	std::cout << std::endl;
 	return right->encrypt(image_data, sub_array, perm_array, width, height);
 }
 

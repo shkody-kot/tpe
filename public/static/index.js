@@ -162,8 +162,8 @@ var encrypt = function ()
         n = Math.floor(height / tpe_blocksize) | 0;
 	
 	let total_for_perm = tpe_iteration * n * m * tpe_blocksize * tpe_blocksize;
-	let total_for_sub = tpe_iteration * n * m * 
-		(tpe_blocksize * tpe_blocksize - (tpe_blocksize * tpe_blocksize) % 2) / 2 * 3;
+	let total_for_sub = tpe_iteration * n * m * (tpe_blocksize * tpe_blocksize - (tpe_blocksize * tpe_blocksize) % 2) / 2 * 3;
+	
 	(async () => {
 		sub_array = await pseudo_rnd(tpe_key, total_for_sub);
 		perm_array =  await pseudo_rnd(tpe_key, total_for_perm);
