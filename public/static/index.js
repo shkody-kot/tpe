@@ -17,6 +17,7 @@ var tpe;
 var encrypt;
 var decrypt;
 var create;
+var m, n, total_for_perm, total_for_sub;
 
 var init = function() {
 	// document.getElementById("set").disabled = true;
@@ -69,14 +70,6 @@ var browse = function () {
 	console.log("- browse");
 };
 
-const importObject = {
-	imports: {
-		imported_func(arg) {
-			console.log(arg);
-		},
-	},
-};
-
 var set = function(){
 	console.log("+ set");
 	Module._free(tpe);
@@ -93,10 +86,13 @@ var set = function(){
 	}
 	else
 	{
-		draw_thumbnail(image_p, image_pt)
+		//draw_thumbnail(image_p, image_pt)
 		let key;
 		try
 		{
+			tpe_blocksize = parseInt(tpe_blocksize);
+			tpe_blocksize = tpe_blocksize + (3 - (tpe_blocksize % 3));
+			
 			key = allocate(Module.intArrayFromString(tpe_key), 'i8', ALLOC_NORMAL);
 			tpe = Module.__Z6createPcii(key, tpe_iteration, tpe_blocksize);
 			
@@ -104,6 +100,14 @@ var set = function(){
 		{
 			console.log(tpe);
 			Module._free(key);
+			
+			m = Math.floor(image_p.width / tpe_blocksize) | 0;
+			n = Math.floor(image_p.height / tpe_blocksize) | 0;
+			
+			total_for_perm = tpe_iteration * n * m * tpe_blocksize * tpe_blocksize;
+			total_for_sub = tpe_iteration * n * m * 
+				(tpe_blocksize * tpe_blocksize - (tpe_blocksize * tpe_blocksize) % 3) / 3 * 6;
+			draw_thumbnail(image_p, image_pt);
 		}
 		document.getElementById("encrypt").disabled = false;
 	}
@@ -116,9 +120,6 @@ var draw_thumbnail = function (icanvas, tcanvas) {
 	var data = img_data.data;
 	tcanvas.width = icanvas.width;
 	tcanvas.height = icanvas.height;
-
-	var m = parseInt(Math.floor(icanvas.width / blocksize));
-	var n = parseInt(Math.floor(icanvas.height / blocksize));
 
 	var r, g, b, p, q;
 	for (var i = 0; i < n; i++) {
@@ -157,13 +158,7 @@ var encrypt = function ()
 	var image_data = ctx.getImageData(0, 0, width, height);
 	let sub_array = [];
 	let perm_array = [];
-	
-	var m = Math.floor(width / tpe_blocksize) | 0,
-        n = Math.floor(height / tpe_blocksize) | 0;
-	
-	let total_for_perm = tpe_iteration * n * m * tpe_blocksize * tpe_blocksize;
-	let total_for_sub = tpe_iteration * n * m * (tpe_blocksize * tpe_blocksize - (tpe_blocksize * tpe_blocksize) % 2) / 2 * 3;
-	
+
 	console.log(image_data.data);
 	
 	(async () => {
@@ -290,13 +285,6 @@ var decrypt = function ()
 	var image_data = ctx.getImageData(0, 0, width, height);
 	let sub_array = [];
 	let perm_array = [];
-	
-	var m = Math.floor(width / tpe_blocksize) | 0,
-        n = Math.floor(height / tpe_blocksize) | 0;
-	
-	let total_for_perm = tpe_iteration * n * m * tpe_blocksize * tpe_blocksize;
-	let total_for_sub = tpe_iteration * n * m * 
-		(tpe_blocksize * tpe_blocksize - (tpe_blocksize * tpe_blocksize) % 2) / 2 * 3;
 	
 	(async () => {
 		sub_array = await pseudo_rnd(tpe_key, total_for_sub);

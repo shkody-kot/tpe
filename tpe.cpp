@@ -5,8 +5,8 @@ tpe::tpe(char * rkey, int riterations, int rblocksize)
 	std::cout << rkey << std::endl;				//important for whatever reason?????
 	strcpy(base->key, rkey);
 	base->iterations = riterations;
-	base->blocksize = rblocksize;
-	//std::cout << base->key << " -- " << base->iterations << " -- " << base->blocksize << std::endl; 
+	//for 3-pixel substitution: make sure blocksize is a multiple of 3
+	base->blocksize = rblocksize;// + (rblocksize % 3);
 }
 
 tpe::~tpe()
@@ -20,13 +20,13 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	int n = std::floor(height / base->blocksize);
 	
 	std::vector<int> permutation;
-	uint8_t r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2;
-	int p, q, x, y;
+	uint8_t r1, b1, g1, r2, b2, g2, r3, g3, b3, rt1, gt1, bt1, rt2, gt2, bt2,rt3, gt3, bt3;
+	int p, q, x, y, a, b;
 	
 	//calculate sizes for each random number box	
 	int total_for_perm = base->iterations * n * m * base->blocksize * base->blocksize;
 	int total_for_sub = base->iterations * n * m * 
-		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 2) / 2 * 3;
+		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 3) / 3 * 6;
 	
 	auto start = std::chrono::high_resolution_clock::now();	
 	//create a pseudo random number box for both the subsitution and permutation
@@ -46,13 +46,15 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 			//for each column of blocks...
 			for (int j = 0; j < m; j++)
 			{
-				//for each pixel within those blocks
-				for (int k = 0; k < base->blocksize * base->blocksize; k += 2)
+				//for each pixel within those blocks, select 3 pixels
+				for (int k = 0; k < base->blocksize * base->blocksize; k += 3)
 				{
 					p = k / base->blocksize; 			//row# of pixel
 					q = k % base->blocksize;			//col# of pixel
 					x = (k + 1) / base->blocksize;		//adjacent pixel
 					y = (k + 1) % base->blocksize;
+					a = (k + 2) / base->blocksize;		//third pixel
+					b = (k + 2) % base->blocksize;
 					
 					//fetch pixel pairs
 					r1 = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4];
@@ -63,15 +65,22 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					g2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1];
 					b2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2];
 					
+					r3 = image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4];
+					g3 = image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4 + 1];
+					b3 = image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4 + 2];
+					
 					//generate random numbers fot pixels bt keep sum
 					rt1 = s_aes->get_new_couple(r1, r2, true);
-					rt2 = r1 + r2 - rt1;
+					rt2 = s_aes->get_new_couple(r1 + r2 - rt1, r3, true);
+					rt3 = r1 + r2 + r3 - rt1 - rt2;
 					
 					gt1 = s_aes->get_new_couple(g1, g2, true);
-					gt2 = g1 + g2 - gt1;
+					gt2 = s_aes->get_new_couple(g1 + g2 - gt1, g3, true);
+					gt3 = g1 + g2 + g3 - gt1 - gt2;
 					
 					bt1 = s_aes->get_new_couple(b1, b2, true);
-					bt2 = b1 + b2 - bt1;
+					bt2 = s_aes->get_new_couple(b1 + b2 - bt1, b3, true);
+					bt3 = b1 + b2 + b3 - bt1 - bt2;
 					
 					//replace pixels with random pixels
 					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4] = rt1;
@@ -81,6 +90,10 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4] = rt2;
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1] = gt2;
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2] = bt2;
+					
+					image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4] = rt3;
+					image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4 + 1] = gt3;
+					image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4 + 2] = bt3;
 				}
 			}
 		}
@@ -97,11 +110,7 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 		for (int i = 0; i < n; i++)
 		{
 			for (int j = 0; j < m; j++)
-			{
-				//r_list.clear();
-				//g_list.clear();
-				//b_list.clear();
-				
+			{	
 				for (int k = 0; k < base->blocksize * base->blocksize; k++)
 				{
 					p = std::floor(k / base->blocksize);
@@ -137,8 +146,6 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	std::cout << "TPE encrypt FIN" << std::endl;
 	delete s_aes;
 	delete p_aes;
-	//for (int i = 0; i < width * height; i++) { std::cout << static_cast<int>(image[i]) << "-"; }
-	//std::cout << std::endl;
 	return image;
 }
 
@@ -149,13 +156,12 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	int n = std::floor(height / base->blocksize);
 	
 	std::vector<int> permutation;
-	uint8_t r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2;
-	int p, q, x, y;
+	uint8_t r1, b1, g1, r2, b2, g2, r3, g3, b3, rt1, gt1, bt1, rt2, gt2, bt2,rt3, gt3, bt3;
+	int p, q, x, y, a, b;
 	
-	//substitute pixels	
 	int total_for_perm = base->iterations * n * m * base->blocksize * base->blocksize;
 	int total_for_sub = base->iterations * n * m * 
-		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 2) / 2 * 3;
+		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 3) / 3 * 6;
 	
 	aes_rnd * s_aes = new aes_rnd(sub_array, total_for_sub);
 	aes_rnd * p_aes = new aes_rnd(perm_array, total_for_perm);
@@ -213,12 +219,14 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 		{
 			for (int j = 0; j < m; j++)
 			{
-				for (int k = 0; k < base->blocksize * base->blocksize - 1; k += 2)
+				for (int k = 0; k < base->blocksize * base->blocksize - 1; k += 3)
 				{
 					p = k / base->blocksize;
 					q = k % base->blocksize;
 					x = (k + 1) / base->blocksize;
 					y = (k + 1) % base->blocksize;
+					a = (k + 2) / base->blocksize;
+					b = (k + 2) % base->blocksize;
 					
 					//fetch pixel pairs
 					r1 = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4];
@@ -229,15 +237,22 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					g2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1];
 					b2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2];
 					
-					//generate the same random numbers but backwards this time
+					r3 = image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4];
+					g3 = image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4 + 1];
+					b3 = image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4 + 2];
+					
+					//generate random numbers fot pixels bt keep sum
 					rt1 = s_aes->get_new_couple(r1, r2, false);
-					rt2 = r1 + r2 - rt1;
+					rt2 = s_aes->get_new_couple(r1 + r2 - rt1, r3, false);
+					rt3 = r1 + r2 + r3 - rt1 - rt2;
 					
 					gt1 = s_aes->get_new_couple(g1, g2, false);
-					gt2 = g1 + g2 - gt1;
+					gt2 = s_aes->get_new_couple(g1 + g2 - gt1, g3, false);
+					gt3 = g1 + g2 + g3 - gt1 - gt2;
 					
 					bt1 = s_aes->get_new_couple(b1, b2, false);
-					bt2 = b1 + b2 - bt1;
+					bt2 = s_aes->get_new_couple(b1 + b2 - bt1, b3, false);
+					bt3 = b1 + b2 + b3 - bt1 - bt2;
 					
 					//replace pixels with random pixels
 					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4] = rt1;
@@ -247,6 +262,10 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4] = rt2;
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1] = gt2;
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2] = bt2;
+					
+					image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4] = rt3;
+					image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4 + 1] = gt3;
+					image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4 + 2] = bt3;
 				}
 			}
 		}
