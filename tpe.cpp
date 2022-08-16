@@ -26,7 +26,7 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	//calculate sizes for each random number box	
 	int total_for_perm = base->iterations * n * m * base->blocksize * base->blocksize;
 	int total_for_sub = base->iterations * n * m * 
-		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 3) / 3 * 6;
+		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 3) * 2;
 	
 	auto start = std::chrono::high_resolution_clock::now();	
 	//create a pseudo random number box for both the subsitution and permutation
@@ -156,12 +156,12 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	int n = std::floor(height / base->blocksize);
 	
 	std::vector<int> permutation;
-	uint8_t r1, b1, g1, r2, b2, g2, r3, g3, b3, rt1, gt1, bt1, rt2, gt2, bt2,rt3, gt3, bt3;
+	uint8_t r1, b1, g1, r2, b2, g2, r3, g3, b3, rt1, gt1, bt1, rt2, gt2, bt2, rt3, gt3, bt3;
 	int p, q, x, y, a, b;
 	
 	int total_for_perm = base->iterations * n * m * base->blocksize * base->blocksize;
 	int total_for_sub = base->iterations * n * m * 
-		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 3) / 3 * 6;
+		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 3) * 2;
 	
 	aes_rnd * s_aes = new aes_rnd(sub_array, total_for_sub);
 	aes_rnd * p_aes = new aes_rnd(perm_array, total_for_perm);

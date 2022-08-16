@@ -96,8 +96,7 @@ var set = function(){
 			key = allocate(Module.intArrayFromString(tpe_key), 'i8', ALLOC_NORMAL);
 			tpe = Module.__Z6createPcii(key, tpe_iteration, tpe_blocksize);
 			
-		} finally
-		{
+		} finally {
 			console.log(tpe);
 			Module._free(key);
 			
@@ -106,7 +105,7 @@ var set = function(){
 			
 			total_for_perm = tpe_iteration * n * m * tpe_blocksize * tpe_blocksize;
 			total_for_sub = tpe_iteration * n * m * 
-				(tpe_blocksize * tpe_blocksize - (tpe_blocksize * tpe_blocksize) % 3) / 3 * 6;
+				(tpe_blocksize * tpe_blocksize - (tpe_blocksize * tpe_blocksize) % 3) * 2;
 			draw_thumbnail(image_p, image_pt);
 		}
 		document.getElementById("encrypt").disabled = false;
@@ -193,88 +192,6 @@ var encrypt = function ()
 	document.getElementById("decrypt").disabled = false;
 };
 
-var setUploadStatus = function (status) {
-	var s = document.getElementById("upload_status");
-	var msg = "Upload Status: " + status
-	s.innerHTML = msg;
-	console.log(msg)
-};
-
-
-var setUploadStat = function (stat) {
-	var s = document.getElementById("upload_stat");
-	s.innerHTML = stat;
-	console.log("upload stat:" + stat)
-};
-
-
-var upload = function () {
-	chrome.identity.getAuthToken({
-		'interactive': true
-	}, function (token) {
-		var c = document.getElementById("canvas");
-		setUploadStatus("uploading...");
-		c.toBlob(function (blob) {
-			sendImageBinary(token, blob)
-		});
-	});
-};
-
-
-var sendImageBinary = function (token, binaryData) {
-	var time = new Date();
-	var req = new XMLHttpRequest();
-	req.open('POST', 'https://photoslibrary.googleapis.com/v1/uploads', true);
-	req.setRequestHeader('Content-type', 'application/octet-stream');
-	req.setRequestHeader('Authorization', 'Bearer ' + token);
-	req.setRequestHeader('X-Goog-Upload-File-Name', time.toJSON());
-	req.onreadystatechange = function () {
-		var that = this;
-		if (that.readyState === 4 && that.status === 200) {
-			// ref https://developers.google.com/photos/library/guides/upload-media#uploading-bytes
-			console.log("SUCCESS sendImageBinary");
-			console.log(that.responseText);
-			var uploadToken = this.response;
-			setUploadStatus("Uploaded Image Binary");
-			sendMediaItemRequest(token, uploadToken);
-		} else {
-			console.log("ERROR in sendImageBinary");
-			setUploadStatus("Upload Failed at sendImageBinary");
-		}
-	};
-	req.send(binaryData);
-};
-
-
-var sendMediaItemRequest = function (token, uploadToken) {
-	var req = new XMLHttpRequest();
-	req.open('POST', 'https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate', true);
-	req.setRequestHeader('Content-type', 'application/json');
-	req.setRequestHeader('Authorization', 'Bearer ' + token);
-	var payload = {
-		"newMediaItems": [{
-			"description": "tpeimage",
-			"simpleMediaItem": {
-				"uploadToken": uploadToken
-			}
-		}]
-	}
-	payload = JSON.stringify(payload);
-	req.onreadystatechange = function () {
-		var that = this;
-		if (that.readyState === 4 && that.status === 200) {
-			// ref https://developers.google.com/photos/library/guides/upload-media#item-creation-response
-			setUploadStatus("Upload Success");
-			var response = JSON.parse(that.response);
-			var url = response.newMediaItemResults[0].mediaItem.productUrl;
-			setUploadStatus('<a href="' + url + '">Google Photos</a>');
-		} else {
-			setUploadStatus("Upload Failed at sendMediaItemRequest");
-		}
-	};
-	req.send(payload);
-};
-
 var decrypt = function ()
 {
 	console.log("+ decrypt");
@@ -315,32 +232,6 @@ var decrypt = function ()
 		image_dt = document.getElementById("canvas-det");
 		draw_thumbnail(image_d, image_dt);
 	})();
-};
-
-var setDownloadStatus = function (status) {
-	var s = document.getElementById("download_status");
-	var msg = "Download Status: " + status;
-	s.innerHTML = msg;
-	console.log(msg);
-};
-
-
-var setDownloadStat = function (stat) {
-	var s = document.getElementById("download_stat");
-	s.innerHTML = stat;
-	console.log("download stat:" + stat);
-};
-
-
-var download = function () {
-	var downloadLink = document.getElementById("dl_link");
-	var x = document.getElementById("canvas_dl");
-	var dt = x.toDataURL('image/png');
-	downloadLink.href = dt;
-	downloadLink.download = "download";
-	setDownloadStatus("Downloading...")
-	downloadLink.click();
-	setDownloadStatus("Done!");
 };
 
 async function pseudo_rnd(key, need)
