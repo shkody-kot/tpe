@@ -25,8 +25,9 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	
 	//calculate sizes for each random number box	
 	int total_for_perm = base->iterations * n * m * base->blocksize * base->blocksize;
+	//iterations * num_blocks * (random numbers needed per pixel) --> (total pixels % pixel_sub) / pixel_sub * 3
 	int total_for_sub = base->iterations * n * m * 
-		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 3) * 2;
+		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 3) / 3 * 3;
 	
 	auto start = std::chrono::high_resolution_clock::now();	
 	//create a pseudo random number box for both the subsitution and permutation
@@ -71,15 +72,15 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					
 					//generate random numbers fot pixels bt keep sum
 					rt1 = s_aes->get_new_couple(r1, r2, true);
-					rt2 = s_aes->get_new_couple(r1 + r2 - rt1, r3, true);
+					rt2 = r1 + r2 - rt1;
 					rt3 = r1 + r2 + r3 - rt1 - rt2;
 					
 					gt1 = s_aes->get_new_couple(g1, g2, true);
-					gt2 = s_aes->get_new_couple(g1 + g2 - gt1, g3, true);
+					gt2 = g1 + g2 - gt1;
 					gt3 = g1 + g2 + g3 - gt1 - gt2;
 					
 					bt1 = s_aes->get_new_couple(b1, b2, true);
-					bt2 = s_aes->get_new_couple(b1 + b2 - bt1, b3, true);
+					bt2 = b1 + b2 - bt1;
 					bt3 = b1 + b2 + b3 - bt1 - bt2;
 					
 					//replace pixels with random pixels
@@ -157,11 +158,12 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	
 	std::vector<int> permutation;
 	uint8_t r1, b1, g1, r2, b2, g2, r3, g3, b3, rt1, gt1, bt1, rt2, gt2, bt2, rt3, gt3, bt3;
-	int p, q, x, y, a, b;
+	int p, q, x, y, a, c;
 	
 	int total_for_perm = base->iterations * n * m * base->blocksize * base->blocksize;
+	//iterations * num_blocks * (random numbers needed per pixel) --> (total pixels % pixel_sub) / pixel_sub * 3
 	int total_for_sub = base->iterations * n * m * 
-		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 3) * 2;
+		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 3) / 3 * 3;
 	
 	aes_rnd * s_aes = new aes_rnd(sub_array, total_for_sub);
 	aes_rnd * p_aes = new aes_rnd(perm_array, total_for_perm);
@@ -219,14 +221,14 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 		{
 			for (int j = 0; j < m; j++)
 			{
-				for (int k = 0; k < base->blocksize * base->blocksize - 1; k += 3)
+				for (int k = 0; k < base->blocksize * base->blocksize; k += 3)
 				{
 					p = k / base->blocksize;
 					q = k % base->blocksize;
 					x = (k + 1) / base->blocksize;
 					y = (k + 1) % base->blocksize;
 					a = (k + 2) / base->blocksize;
-					b = (k + 2) % base->blocksize;
+					c = (k + 2) % base->blocksize;
 					
 					//fetch pixel pairs
 					r1 = image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4];
@@ -237,21 +239,21 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					g2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1];
 					b2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2];
 					
-					r3 = image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4];
-					g3 = image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4 + 1];
-					b3 = image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4 + 2];
+					r3 = image[(i * width * base->blocksize + a * width + j * base->blocksize + c) * 4];
+					g3 = image[(i * width * base->blocksize + a * width + j * base->blocksize + c) * 4 + 1];
+					b3 = image[(i * width * base->blocksize + a * width + j * base->blocksize + c) * 4 + 2];
 					
 					//generate random numbers fot pixels bt keep sum
 					rt1 = s_aes->get_new_couple(r1, r2, false);
-					rt2 = s_aes->get_new_couple(r1 + r2 - rt1, r3, false);
+					rt2 = r1 + r2 - rt1;
 					rt3 = r1 + r2 + r3 - rt1 - rt2;
 					
 					gt1 = s_aes->get_new_couple(g1, g2, false);
-					gt2 = s_aes->get_new_couple(g1 + g2 - gt1, g3, false);
+					gt2 = g1 + g2 - gt1;
 					gt3 = g1 + g2 + g3 - gt1 - gt2;
 					
 					bt1 = s_aes->get_new_couple(b1, b2, false);
-					bt2 = s_aes->get_new_couple(b1 + b2 - bt1, b3, false);
+					bt2 = b1 + b2 - bt1;
 					bt3 = b1 + b2 + b3 - bt1 - bt2;
 					
 					//replace pixels with random pixels
@@ -263,9 +265,9 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1] = gt2;
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2] = bt2;
 					
-					image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4] = rt3;
-					image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4 + 1] = gt3;
-					image[(i * width * base->blocksize + a * width + j * base->blocksize + b) * 4 + 2] = bt3;
+					image[(i * width * base->blocksize + a * width + j * base->blocksize + c) * 4] = rt3;
+					image[(i * width * base->blocksize + a * width + j * base->blocksize + c) * 4 + 1] = gt3;
+					image[(i * width * base->blocksize + a * width + j * base->blocksize + c) * 4 + 2] = bt3;
 				}
 			}
 		}
