@@ -17,6 +17,7 @@ var tpe;
 var encrypt;
 var decrypt;
 var create;
+//variables to calculate how many random numbers needed for aes
 var m, n, total_for_perm, total_for_sub;
 
 var init = function() {
@@ -94,13 +95,13 @@ var set = function(){
 			
 		} finally
 		{
+			//number of blocks the image will have
 			m = Math.floor(image_p.width / tpe_blocksize) | 0;
 			n = Math.floor(image_p.height / tpe_blocksize) | 0;
 			
 			total_for_perm = tpe_iteration * n * m * tpe_blocksize * tpe_blocksize;
 			total_for_sub = tpe_iteration * n * m * (tpe_blocksize * tpe_blocksize - (tpe_blocksize * tpe_blocksize) % 2) / 2 * 3;
 			
-			console.log(tpe);
 			Module._free(key);
 			draw_thumbnail(image_p, image_pt)
 		}
@@ -115,9 +116,6 @@ var draw_thumbnail = function (icanvas, tcanvas) {
 	var data = img_data.data;
 	tcanvas.width = icanvas.width;
 	tcanvas.height = icanvas.height;
-
-	var m = parseInt(Math.floor(icanvas.width / blocksize));
-	var n = parseInt(Math.floor(icanvas.height / blocksize));
 
 	var r, g, b, p, q;
 	for (var i = 0; i < n; i++) {

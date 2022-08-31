@@ -63,24 +63,54 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					g2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1];
 					b2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2];
 					
+					//set up threads
+					int r_thread, b_thread, g_thread;
+					pthread_t threads[NUM_THREADS];
+					
+					struct pixels * red, * green, * blue;
+					//set structs with arguments for get_new_couple function to pass to threads
+					red->pixel1 = r1;
+					red->pixel2 = r2;
+					red->encrypt = true;
+					red->random = s_aes;
+					
+					green->pixel1 = g1;
+					green->pixel2 = g2;
+					green->encrypt = true;
+					green->random = s_aes;
+					
+					blue->pixel1 = b1;
+					blue->pixel2 = b2;
+					blue->encrypt = true;
+					blue->random = s_aes;
+					
+					//create threads to generate random pixels
+					r_thread = pthread_create(&threads[0], NULL, generate, (void *)red);
+					g_thread = pthread_create(&threads[1], NULL, generate, (void *)green);
+					b_thread = pthread_create(&threads[2], NULL, generate, (void *)blue);
+					
+					pthread_join(threads[0], NULL);
+					pthread_join(g_thread, NULL);
+					pthread_join(b_thread, NULL);
+					
 					//generate random numbers fot pixels bt keep sum
-					rt1 = s_aes->get_new_couple(r1, r2, true);
+					/*rt1 = red.pixel1;
 					rt2 = r1 + r2 - rt1;
 					
-					gt1 = s_aes->get_new_couple(g1, g2, true);
+					gt1 = green.pixel1;
 					gt2 = g1 + g2 - gt1;
 					
-					bt1 = s_aes->get_new_couple(b1, b2, true);
-					bt2 = b1 + b2 - bt1;
+					bt1 = blue.pixel1;
+					bt2 = b1 + b2 - bt1;*/
 					
 					//replace pixels with random pixels
-					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4] = rt1;
-					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 1] = gt1;
-					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 2] = bt1;
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4] = red->pixel1;
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 1] = green->pixel1;
+					image[(i * width * base->blocksize + p * width + j * base->blocksize + q) * 4 + 2] = blue->pixel1;
 					
-					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4] = rt2;
-					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1] = gt2;
-					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2] = bt2;
+					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4] = red->pixel2;
+					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1] = green->pixel2;
+					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2] = blue->pixel2;
 				}
 			}
 		}
@@ -152,7 +182,6 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	uint8_t r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2;
 	int p, q, x, y;
 	
-	//substitute pixels	
 	int total_for_perm = base->iterations * n * m * base->blocksize * base->blocksize;
 	int total_for_sub = base->iterations * n * m * 
 		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 2) / 2 * 3;
@@ -257,4 +286,17 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	delete s_aes;
 	delete p_aes;
 	return image;
+}
+
+void * tpe::generate(void * argument)
+{
+	struct pixels * data;
+	uint8_t temp;
+	data = (struct pixels *) argument;
+	temp = data->random->get_new_couple(data->pixel1, data->pixel2, data->encrypt);
+	data->pixel2 = data->pixel1 + data->pixel2 - temp;
+	data->pixel1 = temp;
+	std::cout << "within thread; "; 
+	
+	pthread_exit(NULL);
 }

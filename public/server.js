@@ -10,6 +10,8 @@ var port = process.env.PORT || 3000;
 
 app.get('/', function (request, response)
 {
+	response.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+	response.setHeader("Cross-Origin-Opener-Policy", "same-origin");
 	response.sendFile(path.join(__dirname, '/index.html'));
 });
 
