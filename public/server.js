@@ -3,8 +3,13 @@ var path = require('path');
 var fs = require('fs');
 var app = express();
 
-//includes all our funky little css and js files
-app.use(express.static(__dirname + '/static'));
+//includes all (static) css, js, wasm files
+app.use(express.static(__dirname + '/static', {
+	setHeaders: function(response, path) 
+	{
+		response.set("Cross-Origin-Embedder-Policy", "require-corp");
+	}
+}));
 
 var port = process.env.PORT || 3000;
 
