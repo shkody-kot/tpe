@@ -3,7 +3,7 @@
 tpe::tpe(char * rkey, int riterations, int rblocksize)
 {
 	std::cout << rkey << std::endl;				//important for whatever reason?????
-	strcpy(base->key, rkey);
+	base->key = rkey;
 	base->iterations = riterations;
 	base->blocksize = rblocksize;
 	//std::cout << base->key << " -- " << base->iterations << " -- " << base->blocksize << std::endl; 
@@ -20,7 +20,7 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	int n = std::floor(height / base->blocksize);
 	
 	std::vector<int> permutation;
-	uint8_t r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2;
+	uint8_t r1, b1, g1, r2, b2, g2; /*, rt1, gt1, bt1, rt2, gt2, bt2;*/
 	int p, q, x, y;
 	
 	//calculate sizes for each random number box	

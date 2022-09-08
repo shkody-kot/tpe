@@ -1,17 +1,16 @@
 #include <iostream>
 #include <string>
-#include <emscripten.h>
+//#include <emscripten.h>
 #include "tpe.h"
 #include <thread>
 
-//extern "C"
-//{
-	uint8_t * EMSCRIPTEN_KEEPALIVE decrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
-	uint8_t * EMSCRIPTEN_KEEPALIVE encrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
-	tpe * EMSCRIPTEN_KEEPALIVE create(char *, int, int);
-	void menu();
-	void options(tpe *, std::string);
-//}
+
+uint8_t * /*EMSCRIPTEN_KEEPALIVE*/ decrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
+uint8_t * /*EMSCRIPTEN_KEEPALIVE*/ encrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
+tpe * /*EMSCRIPTEN_KEEPALIVE*/ create(char *, int, int);
+void menu();
+void options(tpe *, std::string &);
+
 
 int main(int argc, char **argv, char **envp)
 {
@@ -19,16 +18,6 @@ int main(int argc, char **argv, char **envp)
 	std::string input;
 	bool done = false;
 	tpe * object = nullptr;
-	
-	/*int color1[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-	int color2[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-	int color3[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-	char test[] = "testkey";
-	
-	tpe * image = create(test, 10, 1);
-	encrypt(color1, color2, color3, 10, 1, image);
-	decrypt(color1, color2, color3, 10, 1, image);
-	delete image;*/
 	
 	menu();
 	std::cin >> input;
@@ -70,7 +59,7 @@ uint8_t * decrypt(uint8_t * image_data, uint8_t * sub_array, uint8_t * perm_arra
 
 void menu()
 {
-	string menu = "CREATE -- ENCRYPT -- DECRYPT -- EXIT";
+	std::string menu = "CREATE -- ENCRYPT -- DECRYPT -- EXIT";
 	std::cout << "Choose an option (all lowercase): " << std::endl;
 	std::cout << menu << std::endl;
 }
@@ -87,8 +76,8 @@ void options(tpe * object, std::string &input)
 	for (int i = 0; i < 375; i++) { sub[i] = std::rand() % 256;  }
 	for (int i = 0; i < 1000; i++) { perm[i] = std::rand() % 256; }
 	
-	s = &sub;
-	p = &perm;
+	s = &sub[0];
+	p = &perm[0];
 	
 	if (input == "create")
 	{
@@ -105,13 +94,13 @@ void options(tpe * object, std::string &input)
 		
 		for (int i = 0; i < 400; i++) { data[i] = std::rand() % 256;  }
 		
-		d = &data;
-		d = encrypt(d, s, p, 10, 10);
+		d = &data[0];
+		d = encrypt(d, s, p, 10, 10, object);
 		std::cout << "encryption complete";
 	}
 	else if (input == "decrypt" && d != nullptr)
 	{
-		d = decrypt(d, s, p, 10, 10);
+		d = decrypt(d, s, p, 10, 10, object);
 		std::cout << "decryption complete";
 	}
 	else if (input == "decrypt" && d == nullptr) { std::cout << "cannot decrypt"; }
