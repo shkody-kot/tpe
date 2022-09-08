@@ -3,7 +3,7 @@
 tpe::tpe(char * rkey, int riterations, int rblocksize)
 {
 	std::cout << rkey << std::endl;				//important for whatever reason?????
-	strcpy(base->key, rkey);
+	base->key = rkey;
 	base->iterations = riterations;
 	base->blocksize = rblocksize;
 	//std::cout << base->key << " -- " << base->iterations << " -- " << base->blocksize << std::endl; 
@@ -152,7 +152,6 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	uint8_t r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2;
 	int p, q, x, y;
 	
-	//substitute pixels	
 	int total_for_perm = base->iterations * n * m * base->blocksize * base->blocksize;
 	int total_for_sub = base->iterations * n * m * 
 		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 2) / 2 * 3;
