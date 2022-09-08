@@ -64,8 +64,6 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					b2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2];
 					
 					//set up threads
-					int r_thread, b_thread, g_thread;
-					pthread_t threads[NUM_THREADS];
 					
 					struct pixels * red, * green, * blue;
 					//set structs with arguments for get_new_couple function to pass to threads
@@ -85,13 +83,13 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					blue->random = s_aes;
 					
 					//create threads to generate random pixels
-					r_thread = pthread_create(&threads[0], NULL, generate, (void *)red);
-					g_thread = pthread_create(&threads[1], NULL, generate, (void *)green);
-					b_thread = pthread_create(&threads[2], NULL, generate, (void *)blue);
+					std::thread r_thread(generate, red);
+					std::thread g_thread(generate, green);
+					std::thread b_thread(generate, blue);
 					
-					pthread_join(threads[0], NULL);
-					pthread_join(g_thread, NULL);
-					pthread_join(b_thread, NULL);
+					r_thread.join();
+					g_thread.join();
+					b_thread.join();
 					
 					//generate random numbers fot pixels bt keep sum
 					/*rt1 = red.pixel1;
@@ -288,15 +286,11 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	return image;
 }
 
-void * tpe::generate(void * argument)
+void tpe::generate(pixels * data)
 {
-	struct pixels * data;
 	uint8_t temp;
-	data = (struct pixels *) argument;
 	temp = data->random->get_new_couple(data->pixel1, data->pixel2, data->encrypt);
 	data->pixel2 = data->pixel1 + data->pixel2 - temp;
 	data->pixel1 = temp;
 	std::cout << "within thread; "; 
-	
-	pthread_exit(NULL);
 }

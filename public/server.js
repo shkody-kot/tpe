@@ -8,6 +8,7 @@ app.use(express.static(__dirname + '/static', {
 	setHeaders: function(response, path) 
 	{
 		response.set("Cross-Origin-Embedder-Policy", "require-corp");
+		response.set("Cross-Origin-Opener-Policy", "same-origin");
 	}
 }));
 
