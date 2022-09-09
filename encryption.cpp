@@ -1,15 +1,15 @@
 #include <iostream>
 #include <string>
-//#include <emscripten.h>
+#include <emscripten.h>
 #include "tpe.h"
 #include <thread>
 
 
-uint8_t * /*EMSCRIPTEN_KEEPALIVE*/ decrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
-uint8_t * /*EMSCRIPTEN_KEEPALIVE*/ encrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
-tpe * /*EMSCRIPTEN_KEEPALIVE*/ create(char *, int, int);
+uint8_t * EMSCRIPTEN_KEEPALIVE decrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
+uint8_t * EMSCRIPTEN_KEEPALIVE encrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
+tpe * EMSCRIPTEN_KEEPALIVE create(char *, int, int);
 void menu();
-void options(tpe *, std::string &);
+tpe * options(tpe *, std::string &);
 
 
 int main(int argc, char **argv, char **envp)
@@ -29,13 +29,15 @@ int main(int argc, char **argv, char **envp)
 			done = true;
 			break;
 		}
-		options(object, input);
+		object = options(object, input);
 		input.clear();
 		std::cout << std::endl;
 		menu();
 		std::cin.ignore(10000, '\n');
 		std::cin >> input;
 	}
+	
+	if (object != nullptr) { delete object; }
 	
 	return 0;
 }
@@ -53,8 +55,10 @@ uint8_t * encrypt(uint8_t * image_data, uint8_t * sub_array, uint8_t * perm_arra
 }
 
 uint8_t * decrypt(uint8_t * image_data, uint8_t * sub_array, uint8_t * perm_array, int width, int height, tpe * right)
-{	
-	return right->decrypt(image_data, sub_array, perm_array, width, height);
+{	uint8_t * data;
+	data = right->decrypt(image_data, sub_array, perm_array, width, height);
+	delete right;
+	return data;
 }
 
 void menu()
@@ -64,7 +68,7 @@ void menu()
 	std::cout << menu << std::endl;
 }
 
-void options(tpe * object, std::string &input)
+tpe * options(tpe * object, std::string &input)
 {
 	uint8_t * d = nullptr;
 	uint8_t * s;
@@ -88,7 +92,7 @@ void options(tpe * object, std::string &input)
 		if (object != nullptr) { std::cout << "tpe object created"; }
 		else { std::cout << "error"; }
 	}
-	else if (input == "encrypt")
+	else if (input == "encrypt" && object != nullptr)
 	{
 		uint8_t data[400];
 		
@@ -103,7 +107,9 @@ void options(tpe * object, std::string &input)
 		d = decrypt(d, s, p, 10, 10, object);
 		std::cout << "decryption complete";
 	}
-	else if (input == "decrypt" && d == nullptr) { std::cout << "cannot decrypt"; }
+	else if (input == "decrypt" && d == nullptr) { std::cout << "cannot decrypt; encrypt first"; }
+	else if (input == "encrypt" && object == nullptr) { std::cout << "cannot encrypt; create tpe object first"; }
 	else if (input != "quit" && input != "exit") { std::cout << "invalid input"; }
 	input.clear();
+	return object;
 }

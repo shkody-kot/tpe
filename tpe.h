@@ -20,13 +20,13 @@ class tpe
 	private:	
 	struct pixels
 	{
-		uint8_t pixel1;
+		uint8_t pixel1 = 0;
 		uint8_t pixel2;
 		bool encrypt;
 		aes_rnd * random;
 	};
 	
-	static void generate(tpe::pixels * data);
+	static void generate(tpe::pixels *);
 	
 	struct heap
 	{

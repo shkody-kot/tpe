@@ -64,8 +64,9 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					b2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2];
 					
 					//set up threads
-					
-					struct pixels * red, * green, * blue;
+					pixels * red = new pixels;
+					pixels * green = new pixels;
+					pixels * blue = new pixels;
 					//set structs with arguments for get_new_couple function to pass to threads
 					red->pixel1 = r1;
 					red->pixel2 = r2;
@@ -109,7 +110,12 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4] = red->pixel2;
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1] = green->pixel2;
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2] = blue->pixel2;
+					
+					delete red;
+					delete green;
+					delete blue;
 				}
+				
 			}
 		}
 		
@@ -292,5 +298,5 @@ void tpe::generate(pixels * data)
 	temp = data->random->get_new_couple(data->pixel1, data->pixel2, data->encrypt);
 	data->pixel2 = data->pixel1 + data->pixel2 - temp;
 	data->pixel1 = temp;
-	std::cout << "within thread; "; 
+	//std::cout << "within thread; "; 
 }
