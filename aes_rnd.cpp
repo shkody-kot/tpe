@@ -27,6 +27,7 @@ uint8_t aes_rnd::get_new_couple(uint8_t p, uint8_t q, bool encrypt)
 {
 	int rnd = this->next();
 	int sum = p + q;
+	//std::cout << "rnd: " << rnd << " sum: " << sum << std::endl;
 	if (sum <= 255)
 	{
 		if (encrypt) { rnd = (p + rnd) % (sum + 1); }

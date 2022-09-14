@@ -21,9 +21,9 @@ class tpe
 	struct pixels
 	{
 		uint8_t pixel1 = 0;
-		uint8_t pixel2;
-		bool encrypt;
-		aes_rnd * random;
+		uint8_t pixel2 = 0;
+		bool encrypt = false;
+		aes_rnd * random = nullptr;
 	};
 	
 	static void generate(tpe::pixels *);

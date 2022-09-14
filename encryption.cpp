@@ -9,7 +9,7 @@ uint8_t * EMSCRIPTEN_KEEPALIVE decrypt(uint8_t *, uint8_t * , uint8_t *, int, in
 uint8_t * EMSCRIPTEN_KEEPALIVE encrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
 tpe * EMSCRIPTEN_KEEPALIVE create(char *, int, int);
 void menu();
-tpe * options(tpe *, std::string &);
+tpe * options(tpe *, uint8_t *, std::string &);
 
 
 int main(int argc, char **argv, char **envp)
@@ -18,8 +18,9 @@ int main(int argc, char **argv, char **envp)
 	std::string input;
 	bool done = false;
 	tpe * object = nullptr;
+	uint8_t * d = nullptr;
 	
-	menu();
+	/*menu();
 	std::cin >> input;
 	
 	while (done != true)
@@ -29,13 +30,13 @@ int main(int argc, char **argv, char **envp)
 			done = true;
 			break;
 		}
-		object = options(object, input);
+		object = options(object, d, input);
 		input.clear();
 		std::cout << std::endl;
 		menu();
 		std::cin.ignore(10000, '\n');
 		std::cin >> input;
-	}
+	}*/
 	
 	if (object != nullptr) { delete object; }
 	
@@ -68,9 +69,8 @@ void menu()
 	std::cout << menu << std::endl;
 }
 
-tpe * options(tpe * object, std::string &input)
+tpe * options(tpe * object, uint8_t * d, std::string &input)
 {
-	uint8_t * d = nullptr;
 	uint8_t * s;
 	uint8_t * p;
 		
@@ -86,7 +86,7 @@ tpe * options(tpe * object, std::string &input)
 	if (input == "create")
 	{
 		int iterations = 10;
-		int block = 3;
+		int block = 2;
 		char test[] = "testkey";
 		object = create(test, iterations, block);
 		if (object != nullptr) { std::cout << "tpe object created"; }

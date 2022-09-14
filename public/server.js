@@ -9,6 +9,7 @@ app.use(express.static(__dirname + '/static', {
 	{
 		response.set("Cross-Origin-Embedder-Policy", "require-corp");
 		response.set("Cross-Origin-Opener-Policy", "same-origin");
+		response.set("Cross-Origin-Resource-Policy", "same-site");
 	}
 }));
 

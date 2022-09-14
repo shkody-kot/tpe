@@ -2,7 +2,6 @@
 
 tpe::tpe(char * rkey, int riterations, int rblocksize)
 {
-	std::cout << rkey << std::endl;				//important for whatever reason?????
 	base->key = rkey;
 	base->iterations = riterations;
 	base->blocksize = rblocksize;

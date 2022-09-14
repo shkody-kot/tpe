@@ -12,6 +12,7 @@ pwd
 	-s EXPORTED_FUNCTIONS='["_free", "_main"]' \
 	-s ALLOW_MEMORY_GROWTH=1 \
 	-pthread \
+	-s USE_PTHREADS=1 \
 	-s PTHREAD_POOL_SIZE=4 \
 	-O3 -o enc.js || exit 1
 mv enc.js ./public/static
