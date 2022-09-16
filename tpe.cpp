@@ -27,14 +27,17 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	int total_for_sub = base->iterations * n * m * 
 		(base->blocksize * base->blocksize - (base->blocksize * base->blocksize) % 2) / 2 * 3;
 	
-	auto start = std::chrono::high_resolution_clock::now();	
 	//create a pseudo random number box for both the subsitution and permutation
 	aes_rnd * s_aes = new aes_rnd(sub_array, total_for_sub); 
 	aes_rnd * p_aes = new aes_rnd(perm_array, total_for_perm);
 	
-	auto endof_aes = std::chrono::high_resolution_clock::now();
+	auto start = std::chrono::high_resolution_clock::now();
 	
 	std::cout << "initialized" << std::endl;
+	
+	pixels * red = new pixels;
+	pixels * green = new pixels;
+	pixels * blue = new pixels;
 	
 	for (auto ccc = 0; ccc < base->iterations; ccc++)
 	{
@@ -63,9 +66,6 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					b2 = image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2];
 					
 					//set up threads
-					pixels * red = new pixels;
-					pixels * green = new pixels;
-					pixels * blue = new pixels;
 					//set structs with arguments for get_new_couple function to pass to threads
 					red->pixel1 = r1;
 					red->pixel2 = r2;
@@ -109,10 +109,6 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4] = red->pixel2;
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 1] = green->pixel2;
 					image[(i * width * base->blocksize + x * width + j * base->blocksize + y) * 4 + 2] = blue->pixel2;
-					
-					delete red;
-					delete green;
-					delete blue;
 				}
 				
 			}
@@ -162,11 +158,14 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 		}
 	}
 	
+	delete red;
+	delete green;
+	delete blue;
+	
 	std::cout << "permutation complete (main); blocksize: " << base->blocksize << std::endl;
 	
 	auto end = std::chrono::high_resolution_clock::now();
-	std::cout << "aes: " << std::chrono::duration_cast<std::chrono::milliseconds>(endof_aes - start).count() << std::endl;
-	std::cout << "after aes: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - endof_aes).count() << std::endl;
+	std::cout << "encryption: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
 	std::cout << "TPE encrypt FIN" << std::endl;
 	delete s_aes;
 	delete p_aes;
@@ -297,5 +296,5 @@ void tpe::generate(pixels * data)
 	temp = data->random->get_new_couple(data->pixel1, data->pixel2, data->encrypt);
 	data->pixel2 = data->pixel1 + data->pixel2 - temp;
 	data->pixel1 = temp;
-	//std::cout << "within thread; "; 
+	return;
 }

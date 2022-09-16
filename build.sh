@@ -14,6 +14,7 @@ pwd
 	-pthread \
 	-s USE_PTHREADS=1 \
 	-s PTHREAD_POOL_SIZE=4 \
+	-s OFFSCREENCANVAS_SUPPORT=1 \
 	-O3 -o enc.js || exit 1
 mv enc.js ./public/static
 mv enc.wasm ./public/static

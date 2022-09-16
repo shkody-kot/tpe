@@ -71,18 +71,13 @@ void menu()
 
 tpe * options(tpe * object, uint8_t * d, std::string &input)
 {
-	uint8_t * s;
-	uint8_t * p;
-		
-	uint8_t sub[375];
-	uint8_t perm[1000];
+	uint8_t * s = new uint8_t[375];
+	uint8_t * p = new uint8_t[1000];
 	
-	for (int i = 0; i < 375; i++) { sub[i] = std::rand() % 256;  }
-	for (int i = 0; i < 1000; i++) { perm[i] = std::rand() % 256; }
+	for (int i = 0; i < 375; i++) { s[i] = std::rand() % 256;  }
+	for (int i = 0; i < 1000; i++) { p[i] = std::rand() % 256; }
 	
-	s = &sub[0];
-	p = &perm[0];
-	
+
 	if (input == "create")
 	{
 		int iterations = 10;
@@ -111,5 +106,7 @@ tpe * options(tpe * object, uint8_t * d, std::string &input)
 	else if (input == "encrypt" && object == nullptr) { std::cout << "cannot encrypt; create tpe object first"; }
 	else if (input != "quit" && input != "exit") { std::cout << "invalid input"; }
 	input.clear();
+	delete[] s;
+	delete[] p;
 	return object;
 }
