@@ -18,22 +18,21 @@ class tpe
 	uint8_t * decrypt(uint8_t *, uint8_t *, uint8_t *, int, int);	//decrypt(data, sub_rndbox, per_rndbox)
 	
 	private:	
+	char * key;
+	int iterations;
+	int blocksize;
+		
 	struct pixels
 	{
-		uint8_t pixel1 = 0;
-		uint8_t pixel2 = 0;
-		bool encrypt = false;
-		aes_rnd * random = nullptr;
+		uint8_t * image = nullptr;
+		int block_height = 0;
+		int block_width = 0;
+		int width = 0;
+		aes_rnd * sub = nullptr;
+		aes_rnd * perm = nullptr;
 	};
-	
-	static void generate(tpe::pixels *);
-	
-	struct heap
-	{
-		char * key;
-		int iterations;
-		int blocksize;
-	} * base = new heap;
+		
+	static void encrypt_thread(tpe::pixels *, int, int);
 };
 
 #endif

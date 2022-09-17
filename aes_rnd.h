@@ -11,7 +11,7 @@
 class aes_rnd
 {
 	public:
-	aes_rnd(uint8_t *, int);
+	aes_rnd(uint8_t *, int, int);
 	~aes_rnd();
 	
 	uint8_t next();

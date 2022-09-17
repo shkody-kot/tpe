@@ -1,12 +1,12 @@
 #include "aes_rnd.h"
 
-aes_rnd::aes_rnd(uint8_t * array, int need)
+aes_rnd::aes_rnd(uint8_t * array, int start, int need)
 {
 	base->counter = 0;
 	base->data.clear();
 	base->data.reserve(need);
 	
-	for (int i = 0; i < need; i++) { base->data[i] = array[i]; }
+	for (int i = 0; i < need; i++) { base->data[i] = array[start + i]; }
 }
 
 aes_rnd::~aes_rnd()
