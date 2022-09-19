@@ -33,6 +33,7 @@ class tpe
 	};
 		
 	static void encrypt_thread(tpe::pixels *, int, int);
+	static void decrypt_thread(tpe::pixels *, int, int, int, int);
 };
 
 #endif
