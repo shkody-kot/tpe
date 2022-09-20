@@ -50,13 +50,13 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	pixels * two = new pixels;
 	pixels * three = new pixels;
 	
-	int third_of_pixels = third * m * blocksize * blocksize * 4;
+	int third_of_pixels = third * width * blocksize * 4;
 	std::cout << "blocks: " << n;
 	std::cout << " third of blocks: " << third << " third of pixels: " << third_of_pixels << std::endl;
 	
 	uint8_t * data1 = new uint8_t[third_of_pixels];
 	uint8_t * data2 = new uint8_t[third_of_pixels];
-	uint8_t * data3 = new uint8_t[(third + extra) * m * blocksize * blocksize * 4];
+	uint8_t * data3 = new uint8_t[(third + extra) * width * blocksize * 4];
 	
 	for (int i = 0; i < third_of_pixels; i++)
 	{
@@ -64,7 +64,7 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 		data2[i] = image[third_of_pixels + i];		
 	}
 	
-	for (int i = 0; i < (third + extra) * m * blocksize * blocksize * 4; i++) { data3[i] = image[(2 * third_of_pixels) + i]; }
+	for (int i = 0; i < (third + extra) * width * blocksize * 4; i++) { data3[i] = image[(2 * third_of_pixels) + i]; }
 	
 	one->image = data1;
 	one->block_height = third;
@@ -101,7 +101,7 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 		image[third_of_pixels + i] = two->image[i];
 	}
 	
-	for (int i = 0; i < (third + extra) * m * blocksize * blocksize * 4; i++) { image[(2 * third_of_pixels) + i] = three->image[i]; }
+	for (int i = 0; i < (third + extra) * width * blocksize * 4; i++) { image[(2 * third_of_pixels) + i] = three->image[i]; }
 	
 	std::cout << "permutation complete (main); blocksize: " << blocksize << std::endl;
 	
@@ -164,13 +164,11 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	pixels * two = new pixels;
 	pixels * three = new pixels;
 	
-	int third_of_pixels = third * m * blocksize * blocksize * 4;
-	std::cout << "blocks: " << n;
-	std::cout << " third of blocks: " << third << " third of pixels: " << third_of_pixels << std::endl;
+	int third_of_pixels = third * width * blocksize * 4;
 	
 	uint8_t * data1 = new uint8_t[third_of_pixels];
 	uint8_t * data2 = new uint8_t[third_of_pixels];
-	uint8_t * data3 = new uint8_t[(third + extra) * m * blocksize * blocksize * 4];
+	uint8_t * data3 = new uint8_t[(third + extra) * width * blocksize * 4];
 	
 	for (int i = 0; i < third_of_pixels; i++)
 	{
@@ -178,7 +176,7 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 		data2[i] = image[third_of_pixels + i];		
 	}
 	
-	for (int i = 0; i < (third + extra) * m * blocksize * blocksize * 4; i++) { data3[i] = image[(2 * third_of_pixels) + i]; }
+	for (int i = 0; i < (third + extra) * width * blocksize * 4; i++) { data3[i] = image[(2 * third_of_pixels) + i]; }
 	
 	one->image = data1;
 	one->block_height = third;
@@ -215,7 +213,7 @@ uint8_t * tpe::decrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 		image[third_of_pixels + i] = two->image[i];
 	}
 	
-	for (int i = 0; i < (third + extra) * m * blocksize * blocksize * 4; i++) { image[(2 * third_of_pixels) + i] = three->image[i]; }
+	for (int i = 0; i < (third + extra) * width * blocksize * 4; i++) { image[(2 * third_of_pixels) + i] = three->image[i]; }
 		
 	auto end = std::chrono::high_resolution_clock::now();
 	std::cout << "decryption: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;

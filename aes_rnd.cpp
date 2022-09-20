@@ -5,7 +5,6 @@ aes_rnd::aes_rnd(uint8_t * array, int start, int need)
 	base->counter = 0;
 	base->data.clear();
 	base->data.reserve(need);
-	std::cout << "need: " << need << "; start: " << start << std::endl;
 	
 	for (int i = 0; i < need; i++) { base->data[i] = array[start + i]; }
 }
