@@ -62,13 +62,46 @@ var browse = function () {
 				image_dt.height = img.height;
 				console.log(img.width);
 				console.log(img.height);
+				populate_dropdown(img.width, img.height);
 			};
 			img.src = e.target.result;
+			//populate_dropdown(img.width, img.height);
 		};
 		FR.readAsDataURL(this.files[0]);
 	}
 	console.log("- browse");
 };
+
+var populate_dropdown = function(image_width, image_height)
+{
+	possible_blocksizes = [];
+	console.log(image_width);
+	for (var i = 0; i < image_width; i++)
+	{
+		if (image_width % i == 0 && image_height % i == 0) { possible_blocksizes.push(i); }
+	}
+	var selection = document.getElementById("blocksize");
+	
+	//remove all current children
+	var child = selection.lastElementChild;
+	while (child)
+	{
+		selection.removeChild(child);
+		child = selection.lastElementChild;
+	}
+	
+	console.log(possible_blocksizes);
+	//add new children
+	for (var i = 0; i < possible_blocksizes.length; i++)
+	{
+		var size = possible_blocksizes[i];
+		console.log(size);
+		var option = document.createElement("option");
+		option.value = size;
+		option.text = size;
+		selection.appendChild(option);
+	}
+}
 
 var set = function(){
 	console.log("+ set");
@@ -132,12 +165,16 @@ var draw_thumbnail = function (icanvas, tcanvas) {
 				g += data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4 + 1];
 				b += data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4 + 2];
 			}
+			r = parseInt(r / (blocksize * blocksize));
+			g = parseInt(g / (blocksize * blocksize));
+			b = parseInt(b / (blocksize * blocksize));
+			console.log('red: ' + r + ' green: ' + g + ' blue: ' + b);
 			for (var k = 0; k < blocksize * blocksize; k += 1) {
 				p = parseInt(k / blocksize);
 				q = k % blocksize;
-				data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4] = parseInt(r / (blocksize * blocksize));
-				data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4 + 1] = parseInt(g / (blocksize * blocksize));
-				data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4 + 2] = parseInt(b / (blocksize * blocksize));
+				data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4] = r;
+				data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4 + 1] = g;
+				data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4 + 2] = b;
 			}
 		}
 	}

@@ -15,7 +15,7 @@ tpe::~tpe()
 }
 
 uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_array, int width, int height)
-{
+{	
 	int m = std::floor(width / base->blocksize);
 	int n = std::floor(height / base->blocksize);
 	

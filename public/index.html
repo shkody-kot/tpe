@@ -24,17 +24,7 @@
         <div class="hero-head"></div>
 		<div class="hero-body">
 			<div class="container has-text-centered"> 
-				<h1 class="bold-title fade-in one"> Thumbnail Preserving Encryption </h1>
-				<div class="subtitle is-3 fade-in two">
-					
-				</div>
-				<div class="fade-in three">
-					<div class="social-icons">
-
-					</div>
-
-				</div>
-				
+				<h1 class="bold-title fade-in one"> Thumbnail Preserving Encryption </h1>				
 			</div>
 		</div> 
 		
@@ -71,9 +61,13 @@
 							<input type="file" name="Browse" id="browse" accept="image/*" class="action-button">
 						</div>
 						<span>
-							<div>Number of iterations:<input type="number" name="iterations" id="iterations" min="1" required> </div>
-							<div>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Block Size:<input type="number" name="blocksize" id="blocksize" min="1" required> </div>
-							<div id="abc">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Key:&#160;&#160;&#160;&#160;<input type="text" name="key" id="key" required> </div>
+							<div> Number of iterations:<input type="number" name="iterations" id="iterations" min="1" required> </div>
+							<div> Block Size:
+								<select name="blocksize" id="blocksize">
+									<option value="" selected="selected"> Choose an image, then pick blocksize </option>
+								</select>
+							</div>
+							<div id="abc">Key:<input type="text" name="key" id="key" required> </div>
 							<div><button id="set" class="button">Set</button></div>
 						</span>
 						<!-- Original image -->
