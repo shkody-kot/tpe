@@ -48,7 +48,7 @@ uint8_t aes_rnd::get_new_couple(uint8_t p, uint8_t q, bool encrypt)
 
 std::vector<int> aes_rnd::get_new_permutation(int block_size)
 {
-	int length = block_size * block_size;
+	int length = block_size;
 	std::vector<int> indices(length);
 	
 	for (int i = 0; i < length; ++i) { indices[i] = i; }

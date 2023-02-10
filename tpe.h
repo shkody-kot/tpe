@@ -9,7 +9,7 @@
 class tpe
 {
 	public:
-	tpe(char *, int, int);										//initiator
+	tpe(char *, int, int, int);										//initiator
 	
 	~tpe();
 	
@@ -21,6 +21,8 @@ class tpe
 	{
 		char * key;
 		int iterations;
+		int block_x;
+		int block_y;
 		int blocksize;
 	} * base = new heap;
 };

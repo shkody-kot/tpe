@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 var image_p, image_e, image_d;
 var image_pt, image_et, image_dt;
-var tpe_blocksize, tpe_iteration, tpe_key, tpe_file;
+var tpe_blocksize, tpe_blocksize_x, tpe_blocksize_y, tpe_iteration, tpe_key, tpe_file;
 var tpe;
 var encrypt;
 var decrypt;
@@ -24,7 +24,6 @@ var init = function() {
 	document.getElementById("decrypt").disabled = true;
 	document.getElementById("encrypt").disabled = true;
 	document.getElementById("iterations").value = 10;
-	document.getElementById("blocksize").value = 20;
 	document.getElementById("abc").hidden = true;
 	document.getElementById("key").value = "V7a6kjqDeQUBNAev118sjOp3fbv_RMsHorWHkzuDCsM";
 	console.log("128 bit key hard-coded for demo!");
@@ -74,13 +73,13 @@ var browse = function () {
 
 var populate_dropdown = function(image_width, image_height)
 {
+	//for blocksize x
 	possible_blocksizes = [];
-	console.log(image_width);
 	for (var i = 0; i < image_width; i++)
 	{
-		if (image_width % i == 0 && image_height % i == 0) { possible_blocksizes.push(i); }
+		if (image_width % i == 0) { possible_blocksizes.push(i); }
 	}
-	var selection = document.getElementById("blocksize");
+	var selection = document.getElementById("blocksizex");
 	
 	//remove all current children
 	var child = selection.lastElementChild;
@@ -101,13 +100,41 @@ var populate_dropdown = function(image_width, image_height)
 		option.text = size;
 		selection.appendChild(option);
 	}
+	
+	//for blocksize y
+	possible_blocksizes = [];
+	for (var i = 0; i < image_height; i++)
+	{
+		if (image_height % i == 0) { possible_blocksizes.push(i); }
+	}
+	selection = document.getElementById("blocksizey");
+	
+	//remove all current children
+	child = selection.lastElementChild;
+	while (child)
+	{
+		selection.removeChild(child);
+		child = selection.lastElementChild;
+	}
+	//add new children
+	for (var i = 0; i < possible_blocksizes.length; i++)
+	{
+		var size = possible_blocksizes[i];
+		console.log(size);
+		var option = document.createElement("option");
+		option.value = size;
+		option.text = size;
+		selection.appendChild(option);
+	}
 }
 
 var set = function(){
 	console.log("+ set");
 	Module._free(tpe);
 	tpe_iteration = document.getElementById("iterations").value;
-	tpe_blocksize = document.getElementById("blocksize").value;
+	tpe_blocksize = document.getElementById("blocksizex").value * document.getElementById("blocksizey").value;
+	tpe_blocksize_x = document.getElementById("blocksizex").value;
+	tpe_blocksize_y = document.getElementById("blocksizey").value;
 	tpe_key = document.getElementById("key").value;
 	tpe_file = document.getElementById("browse").value
 
@@ -123,15 +150,15 @@ var set = function(){
 		try
 		{
 			key = allocate(Module.intArrayFromString(tpe_key), 'i8', ALLOC_NORMAL);
-			tpe = Module.__Z6createPcii(key, tpe_iteration, tpe_blocksize);
+			tpe = Module.__Z6createPciii(key, tpe_iteration, tpe_blocksize_x, tpe_blocksize_y);
 			
 		} finally
 		{
-			m = Math.floor(image_p.width / tpe_blocksize) | 0;
-			n = Math.floor(image_p.height / tpe_blocksize) | 0;
+			m = Math.floor(image_p.width / tpe_blocksize_x) | 0;
+			n = Math.floor(image_p.height / tpe_blocksize_x) | 0;
 			
-			total_for_perm = tpe_iteration * n * m * tpe_blocksize * tpe_blocksize;
-			total_for_sub = tpe_iteration * n * m * (tpe_blocksize * tpe_blocksize - (tpe_blocksize * tpe_blocksize) % 2) / 2 * 3;
+			total_for_perm = tpe_iteration * n * m * tpe_blocksize;
+			total_for_sub = tpe_iteration * n * m * (tpe_blocksize - tpe_blocksize % 2) / 2 * 3;
 			
 			console.log(tpe);
 			Module._free(key);
@@ -143,38 +170,42 @@ var set = function(){
 
 var draw_thumbnail = function (icanvas, tcanvas) {
 	console.log("+ draw_thumbnail");
-	var blocksize = tpe_blocksize;
 	var img_data = icanvas.getContext("2d").getImageData(0, 0, icanvas.width, icanvas.height);
 	var data = img_data.data;
 	tcanvas.width = icanvas.width;
 	tcanvas.height = icanvas.height;
 
-	var m = parseInt(Math.floor(icanvas.width / blocksize));
-	var n = parseInt(Math.floor(icanvas.height / blocksize));
+	var m = parseInt(Math.floor(icanvas.width / tpe_blocksize_x));
+	var n = parseInt(Math.floor(icanvas.height / tpe_blocksize_y));
 
 	var r, g, b, p, q;
+	//for each row of blocks
 	for (var i = 0; i < n; i++) {
+		//for each column of blocks
 		for (var j = 0; j < m; j++) {
 			r = 0;
 			g = 0;
 			b = 0;
-			for (var k = 0; k < blocksize * blocksize; k += 1) {
-				p = parseInt(k / blocksize);
-				q = k % blocksize;
-				r += data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4];
-				g += data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4 + 1];
-				b += data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4 + 2];
+			//for each block
+			for (var k = 0; k < tpe_blocksize; k += 1) {
+				p = parseInt(k / tpe_blocksize_x);		//row number
+				q = k % tpe_blocksize_x;				//column number
+				
+				//row_num * height * block_height + pixel_row_num * width * 
+				r += data[(i * icanvas.width * tpe_blocksize_y + p * icanvas.width + j * tpe_blocksize_x + q) * 4];
+				g += data[(i * icanvas.width * tpe_blocksize_y + p * icanvas.width + j * tpe_blocksize_x + q) * 4 + 1];
+				b += data[(i * icanvas.width * tpe_blocksize_y + p * icanvas.width + j * tpe_blocksize_x + q) * 4 + 2];
 			}
-			r = parseInt(r / (blocksize * blocksize));
-			g = parseInt(g / (blocksize * blocksize));
-			b = parseInt(b / (blocksize * blocksize));
+			r = parseInt(r / (tpe_blocksize));
+			g = parseInt(g / (tpe_blocksize));
+			b = parseInt(b / (tpe_blocksize));
 			console.log('red: ' + r + ' green: ' + g + ' blue: ' + b);
-			for (var k = 0; k < blocksize * blocksize; k += 1) {
-				p = parseInt(k / blocksize);
-				q = k % blocksize;
-				data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4] = r;
-				data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4 + 1] = g;
-				data[(i * icanvas.width * blocksize + p * icanvas.width + j * blocksize + q) * 4 + 2] = b;
+			for (var k = 0; k < tpe_blocksize; k += 1) {
+				p = parseInt(k / tpe_blocksize_x);
+				q = k % tpe_blocksize_x;
+				data[(i * icanvas.width * tpe_blocksize_y + p * icanvas.width + j * tpe_blocksize_x + q) * 4] = r;
+				data[(i * icanvas.width * tpe_blocksize_y + p * icanvas.width + j * tpe_blocksize_x + q) * 4 + 1] = g;
+				data[(i * icanvas.width * tpe_blocksize_y + p * icanvas.width + j * tpe_blocksize_x + q) * 4 + 2] = b;
 			}
 		}
 	}

@@ -27,25 +27,6 @@
 				<h1 class="bold-title fade-in one"> Thumbnail Preserving Encryption </h1>				
 			</div>
 		</div> 
-		
-		<div class="hero-foot fade-in three">
-			<div class="container">
-				<hr>
-				<nav class="navbar" role="navigation" aria-label="main navigation">
-					
-					<a role="button" class="navbar-burger" data-target="navMenu" aria-label="menu" aria-expanded="false" >
-						<span aria-hidden="true"></span>
-						<span aria-hidden="true"></span>
-						<span aria-hidden="true"></span>
-					</a>
-					<div class="navbar-menu has-content-centered" id="navMenu">
-						<a class="navbar-item" href="#demo">Demo</a>
-					</div>
-				</nav>
-				<hr>
-			</div>
-		</div>
-    </section> 
 
 	<div class="section" id="demo">
 		<div class="container">
@@ -62,8 +43,11 @@
 						</div>
 						<span>
 							<div> Number of iterations:<input type="number" name="iterations" id="iterations" min="1" required> </div>
-							<div> Block Size:
-								<select name="blocksize" id="blocksize">
+							<div> Block Size (x and y, respectively):
+								<select name="blocksizex" id="blocksizex">
+									<option value="" selected="selected"> Choose an image, then pick blocksize </option>
+								</select>
+								<select name="blocksizey" id="blocksizey">
 									<option value="" selected="selected"> Choose an image, then pick blocksize </option>
 								</select>
 							</div>

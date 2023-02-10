@@ -8,7 +8,7 @@
 //{
 	uint8_t * EMSCRIPTEN_KEEPALIVE decrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
 	uint8_t * EMSCRIPTEN_KEEPALIVE encrypt(uint8_t *, uint8_t * , uint8_t *, int, int, tpe *);
-	tpe * EMSCRIPTEN_KEEPALIVE create(char *, int, int);
+	tpe * EMSCRIPTEN_KEEPALIVE create(char *, int, int, int);
 //}
 
 int main()
@@ -27,9 +27,9 @@ int main()
 	return 0;
 }
 
-tpe * create(char * key, int iterations, int block)
+tpe * create(char * key, int iterations, int blockx, int blocky)
 {
-	tpe * image = new tpe(key, iterations, block);
+	tpe * image = new tpe(key, iterations, blockx, blocky);
 	std::cout << "created a tpe object" << std::endl;
 	return image;
 }
