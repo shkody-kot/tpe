@@ -21,6 +21,10 @@ uint8_t * tpe::encrypt(uint8_t * image, uint8_t * sub_array, uint8_t * perm_arra
 	int m = std::floor(width / base->block_x);
 	int n = std::floor(height / base->block_y);
 	
+	//see if there is a 1 pixel overflow on height or width
+	base->rem_y = height % base->block_y;
+	base->rem_x = width % base->block_x;
+	
 	std::vector<int> permutation;
 	uint8_t r1, b1, g1, r2, b2, g2, rt1, gt1, bt1, rt2, gt2, bt2;
 	int p, q, x, y;

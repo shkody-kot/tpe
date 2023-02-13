@@ -24,6 +24,8 @@ class tpe
 		int block_x;
 		int block_y;
 		int blocksize;
+		int rem_y;
+		int rem_x;
 	} * base = new heap;
 };
 

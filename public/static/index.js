@@ -77,7 +77,7 @@ var populate_dropdown = function(image_width, image_height)
 	possible_blocksizes = [];
 	for (var i = 0; i < image_width; i++)
 	{
-		if (image_width % i == 0) { possible_blocksizes.push(i); }
+		if (image_width % i == 0 || image_width % i == 1) { possible_blocksizes.push(i); }
 	}
 	var selection = document.getElementById("blocksizex");
 	
@@ -105,7 +105,7 @@ var populate_dropdown = function(image_width, image_height)
 	possible_blocksizes = [];
 	for (var i = 0; i < image_height; i++)
 	{
-		if (image_height % i == 0) { possible_blocksizes.push(i); }
+		if (image_height % i == 0 || image_height % i == 1) { possible_blocksizes.push(i); }
 	}
 	selection = document.getElementById("blocksizey");
 	
