@@ -152,8 +152,7 @@ var set = function(){
 			key = allocate(Module.intArrayFromString(tpe_key), 'i8', ALLOC_NORMAL);
 			tpe = Module.__Z6createPciii(key, tpe_iteration, tpe_blocksize_x, tpe_blocksize_y);
 			
-		} finally
-		{
+		} finally {
 			m = Math.floor(image_p.width / tpe_blocksize_x) | 0;
 			n = Math.floor(image_p.height / tpe_blocksize_x) | 0;
 			
@@ -172,13 +171,18 @@ var draw_thumbnail = function (icanvas, tcanvas) {
 	console.log("+ draw_thumbnail");
 	var img_data = icanvas.getContext("2d").getImageData(0, 0, icanvas.width, icanvas.height);
 	var data = img_data.data;
-	tcanvas.width = icanvas.width;
-	tcanvas.height = icanvas.height;
 
 	var m = parseInt(Math.floor(icanvas.width / tpe_blocksize_x));
 	var n = parseInt(Math.floor(icanvas.height / tpe_blocksize_y));
+	
+	const thumbnail = new Uint8ClampedArray(m * n * 4);
+	
+	tcanvas.width = m;
+	tcanvas.height = n;
 
 	var r, g, b, p, q;
+	var a = 255;
+	var index = 0;
 	//for each row of blocks
 	for (var i = 0; i < n; i++) {
 		//for each column of blocks
@@ -199,18 +203,25 @@ var draw_thumbnail = function (icanvas, tcanvas) {
 			r = parseInt(r / (tpe_blocksize));
 			g = parseInt(g / (tpe_blocksize));
 			b = parseInt(b / (tpe_blocksize));
-			console.log('red: ' + r + ' green: ' + g + ' blue: ' + b);
-			for (var k = 0; k < tpe_blocksize; k += 1) {
+			/*for (var k = 0; k < tpe_blocksize; k += 1) {
 				p = parseInt(k / tpe_blocksize_x);
 				q = k % tpe_blocksize_x;
 				data[(i * icanvas.width * tpe_blocksize_y + p * icanvas.width + j * tpe_blocksize_x + q) * 4] = r;
 				data[(i * icanvas.width * tpe_blocksize_y + p * icanvas.width + j * tpe_blocksize_x + q) * 4 + 1] = g;
 				data[(i * icanvas.width * tpe_blocksize_y + p * icanvas.width + j * tpe_blocksize_x + q) * 4 + 2] = b;
-			}
+			}*/
+			thumbnail[index + 0] = r;
+			thumbnail[index + 1] = g;
+			thumbnail[index + 2] = b;
+			thumbnail[index + 3] = a;
+			index = index + 4;
 		}
+		//index = index + 4;
+		console.log(thumbnail);
 	}
+	var thumbnail_image = new ImageData(thumbnail, m);
 	var ctx = tcanvas.getContext("2d");
-	ctx.putImageData(img_data, 0, 0);
+	ctx.putImageData(thumbnail_image, 0, 0);
 	console.log("- draw_thumbnail");
 };
 

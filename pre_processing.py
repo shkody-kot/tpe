@@ -7,8 +7,9 @@ to the filtered thumbnail by changing the minimal amount of pixels'''
 
 from PIL import Image
 import numpy as np
+import os
 
-#get an array of differences between means of two images' thumbnails
+#get an array of differences between means of two images' thumbnails, when no thumbnail is provided
 def blockwise_difference(img1, img2, block_y, block_x, block_size):
     cols, rows = img2.size
     #print(str(cols) + " pixels(width) by " + str(rows) + " pixels(height)")
@@ -50,14 +51,16 @@ def blockwise_difference(img1, img2, block_y, block_x, block_size):
             diff_matrix.append(difference)
             
     return diff_matrix
- 
+
 
 #change pixels in the original image using a greedy algorithm to change each pixel
 #as much as possible, therefore reducing metadata to store
-def generate_o_dash(img, img2, width, height, block_x, block_y, diff_matrix):
+def generate_o_dash(img, img2, width, height, block_x, block_y, diff_matrix, img_name):
     num_pixels = width * height
     pixels = [0] * num_pixels
-    changes = []            #store info about pixels changed
+    #store info about pixels changed
+    changes = []
+    last = (0, 0, 0)
     
     print("O_DASH")
     block_rows = height // block_y
@@ -134,23 +137,23 @@ def generate_o_dash(img, img2, width, height, block_x, block_y, diff_matrix):
                 rgb = (red, green, blue)
                 pixels[position] = rgb
     #test if successful
-    test = blockwise_difference(pixels, img2, block_y, block_x, block_x * block_y)
-    print(test)
+    #test = blockwise_difference(pixels, img2, block_y, block_x, block_x * block_y)
+    #print(test)
     
     #generate metadata
-    m_height, metadata = create_metadata(changes, width)
+    #m_height, metadata = create_metadata(changes, width)
     
     #append metadata to image data
-    metadata = np.reshape(metadata, (m_height, width, 3))    
+    #metadata = np.reshape(metadata, (m_height, width, 3))    
     pixels = np.reshape(pixels, (height, width, 3))
-    pixels = np.append(pixels, metadata, 0)
+    #pixels = np.append(pixels, metadata, 0)
     
     #create image in right order
     #pixels = np.reshape(pixels, (height + m_height, width, 3))
     print(np.shape(pixels))
     
     img_new = Image.fromarray(pixels.astype(np.uint8))
-    img_new.save("modified_image(ira).png")    
+    img_new.save(img_name + "(encrypted).png")    
 
 #create metadata for changed pixels
 def create_metadata(changes, width):
@@ -269,34 +272,56 @@ def undo_o_dash(img, width, height):
             
 
 #MAIN OPERATION
+source_folder = "/mnt/c/Users/iraab/source/filters/public/static/images/full_sized_original/"
+target_folder = "/mnt/c/Users/iraab/source/filters/public/static/images/full_sized_filtered/"
+dest_folder = "/mnt/c/Users/iraab/source/filters/public/static/images/filtered/"
 
-# Open the image (potentially make it accept stream of data as opposed to image url)
-img1 = Image.open("B99_thumbnail.jpg")
-img2 = Image.open("B99_mosaic_med.jpg")
+source_length = len(source_folder)
 
-# Get the width and height of the image
-width, height = img1.size
-print(str(width) + " pixels(width) by " + str(height) + " pixels(height)")
+#for-loop for processing
+#+ "\\*.jpg"
+for filename in os.listdir(source_folder):
+    #set filter name manually
+    filter = "_cubism"
+    #filter = "_oilify"
+    
+    print(filename)
+    
+    total = len(filename)
+    img_name = filename[:total-4]
+    extension = filename[len(img_name):]
+    
+    target_name = target_folder + img_name + filter + extension
+    
+    destination = dest_folder + img_name + filter
+    
+    # Open the image (potentially make it accept stream of data as opposed to image url)
+    img1 = Image.open(source_folder + filename)
+    img2 = Image.open(target_name)
 
-# Define the size of the block
-block_x = 10
-block_y = 14
-block_size = block_x * block_y
+    # Get the width and height of the image
+    width, height = img1.size
+    print(str(width) + " pixels(width) by " + str(height) + " pixels(height)")
+    thumb_width = 200
+    thumb_height = 113
 
-print("calculated num pixels: " + str(width * height))
+    # Define the size of the block
+    block_x = 10
+    block_y = 10
+    block_size = block_x * block_y
 
-#ENCRYPT
-diff_matrix = blockwise_difference(img1.getdata(), img2.getdata(), block_y, block_x, block_size)
+    print("calculated num pixels: " + str(width * height))
 
-print(diff_matrix)
-#print(len(diff_matrix))
+    #ENCRYPT
+    diff_matrix = blockwise_difference(img1.getdata(), img2.getdata(), block_y, block_x, block_size)
 
-generate_o_dash(img1.getdata(), img2.getdata(), width, height - 1, block_x, block_y, diff_matrix)
+    #print(diff_matrix)
+    #print(len(diff_matrix))
 
-
-#DECRYPT
-img3 = Image.open("modified_image(ira).png")
-
-undo_o_dash(img3.getdata(), width, height - 1)
+    generate_o_dash(img1.getdata(), img2.getdata(), width, height, block_x, block_y, diff_matrix, destination)
 
 
+    '''#DECRYPT
+    img3 = Image.open("modified_image(ira).png")
+
+    undo_o_dash(img3.getdata(), width, height - 1)'''
